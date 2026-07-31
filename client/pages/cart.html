@@ -1,11 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Green Hub | Shopping Cart</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
+
 <body>
-    
+
+    <!-- Header -->
+
+    <header>
+
+        <div class="logo">
+            <i class="fa-solid fa-seedling"></i>
+            <h2>Green Hub</h2>
+        </div>
+
+        <nav>
+
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="about.html">About</a>
+            <a href="contact.html">Contact</a>
+
+        </nav>
+
+    </header>
+
+    <!-- Cart Section -->
+
+    <section class="cart">
+
+        <h1>Your Shopping Cart</h1>
+
+        <table border="1" cellpadding="15">
+
+            <tr>
+
+                <th>Plant</th>
+                <th>Image</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Action</th>
+
+            </tr>
+
+            <tr>
+
+                <td>Snake Plant</td>
+
+                <td>
+
+                    <img src="../images/plant1.jpg"
+                        width="100">
+
+                </td>
+
+                <td>₹399</td>
+
+                <td>
+
+                    <input type="number"
+                        value="1"
+                        min="1">
+
+                </td>
+
+                <td>₹399</td>
+
+                <td>
+
+                    <button>Remove</button>
+
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td>Money Plant</td>
+
+                <td>
+
+                    <img src="../images/plant2.jpg"
+                        width="100">
+
+                </td>
+
+                <td>₹299</td>
+
+                <td>
+
+                    <input type="number"
+                        value="2"
+                        min="1">
+
+                </td>
+
+                <td>₹598</td>
+
+                <td>
+
+                    <button>Remove</button>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </section>
+
+    <!-- Order Summary -->
+
+    <section class="summary">
+
+        <h2>Order Summary</h2>
+
+        <p>Items : 3</p>
+
+        <p>Subtotal : ₹997</p>
+
+        <p>Delivery : ₹50</p>
+
+        <h3>Total : ₹1047</h3>
+
+        <br>
+
+        <a href="checkout.html">
+
+            <button>
+
+                Proceed to Checkout
+
+            </button>
+
+        </a>
+
+    </section>
+
+    <!-- Recommended Products -->
+
+    <section class="recommend">
+
+        <h2>You May Also Like</h2>
+
+        <div class="product-container">
+
+            <div class="product-card">
+
+                <img src="../images/plant3.jpg"
+                    width="180">
+
+                <h3>Peace Lily</h3>
+
+                <p>₹499</p>
+
+                <button>Add to Cart</button>
+
+            </div>
+
+            <div class="product-card">
+
+                <img src="../images/plant4.jpg"
+                    width="180">
+
+                <h3>Aloe Vera</h3>
+
+                <p>₹199</p>
+
+                <button>Add to Cart</button>
+
+            </div>
+
+            <div class="product-card">
+
+                <img src="../images/plant5.jpg"
+                    width="180">
+
+                <h3>Rose Plant</h3>
+
+                <p>₹349</p>
+
+                <button>Add to Cart</button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Footer -->
+
+    <footer>
+
+        <h2>Green Hub</h2>
+
+        <p>Your trusted online nursery.</p>
+
+        <p>Email : support@greenhub.com</p>
+
+        <p>Phone : +91 9876543210</p>
+
+        <p>© 2026 Green Hub. All Rights Reserved.</p>
+
+    </footer>
+
 </body>
+
 </html>
