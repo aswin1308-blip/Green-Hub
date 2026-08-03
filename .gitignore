@@ -1,0 +1,15 @@
+# Environment variables
+.env
+
+# Dependencies
+node_modules/
+
+# Uploads
+server/uploads/
+
+# Postman files
+.postman/
+postman/
+
+# Logs
+*.log
