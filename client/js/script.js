@@ -241,6 +241,24 @@ console.log("Green Hub Loaded Successfully");
 
 };
 /* ==========================================
+        MOBILE MENU (hamburger)
+========================================== */
+
+const hamburger = document.querySelector(".hamburger");
+
+if (hamburger) {
+
+    hamburger.addEventListener("click", () => {
+
+        const nav = document.querySelector("header nav");
+
+        if (nav) nav.classList.toggle("open");
+
+    });
+
+}
+
+/* ==========================================
         LOGIN VALIDATION
 ========================================== */
 
@@ -801,6 +819,8 @@ document.querySelectorAll("nav a").forEach(link => {
 ========================================== */
 
 document.querySelectorAll("img").forEach(img => {
+
+    if (img.hasAttribute("data-nozoom")) return;
 
     img.style.cursor = "pointer";
 

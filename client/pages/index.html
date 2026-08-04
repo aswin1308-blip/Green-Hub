@@ -13,6 +13,28 @@
 </head>
 <body>
 
+    <!-- Announcement Ticker -->
+
+    <div class="gh-ticker">
+
+        <div class="gh-ticker-track">
+
+            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Get 25% Flat Discount on Seeds</span>
+
+            <span><i class="fa-solid fa-truck-fast"></i> Free Delivery on Orders Above ₹499</span>
+
+            <span><i class="fa-solid fa-tag"></i> Use Code: GREEN25 at Checkout</span>
+
+            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Get 25% Flat Discount on Seeds</span>
+
+            <span><i class="fa-solid fa-truck-fast"></i> Free Delivery on Orders Above ₹499</span>
+
+            <span><i class="fa-solid fa-tag"></i> Use Code: GREEN25 at Checkout</span>
+
+        </div>
+
+    </div>
+
     <!-- Header -->
 
     <header>
@@ -48,99 +70,55 @@
 
         </div>
 
+        <button class="hamburger" type="button" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
     </header>
 
-    
-<!-- Hero Section -->
+    <!-- Hero Slideshow -->
 
-    <section class="hero">
+    <section class="gh-hero" id="gh-hero">
 
-        <div class="hero-content">
+        <div class="gh-slides" id="gh-slides"></div>
 
-            
-        </div>
+        <button class="gh-hero-arrow prev" type="button" aria-label="Previous slide">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <button class="gh-hero-arrow next" type="button" aria-label="Next slide">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+
+        <div class="gh-hero-dots" id="gh-hero-dots"></div>
 
     </section>
-    
-    <!-- Categories -->
+
+    <!-- Shop by Category -->
 
     <section class="categories">
 
         <h2>Shop by Category</h2>
 
-        <div class="category-container">
+        <div class="gh-carousel">
 
-            <div class="card">
-                <h3>Indoor Plants</h3>
-            </div>
+            <button class="gh-carrow prev" type="button" aria-label="Previous categories">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
 
-            <div class="card">
-                <h3>Outdoor Plants</h3>
-            </div>
+            <div class="category-container" id="shop-categories"></div>
 
-            <div class="card">
-                <h3>Flowering Plants</h3>
-            </div>
-
-            <div class="card">
-                <h3>Fruit Trees</h3>
-            </div>
-
-            <div class="card">
-                <h3>Medicinal Plants</h3>
-            </div>
+            <button class="gh-carrow next" type="button" aria-label="Next categories">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
 
         </div>
 
     </section>
 
-    <!-- Featured Products -->
+    <!-- Products by Category -->
 
-    <section class="products">
-
-        <h2>Featured Plants</h2>
-
-        <div class="product-container">
-
-            <div class="product-card">
-
-                <img src="../images/plant1.jpg" alt="Plant">
-
-                <h3>Snake Plant</h3>
-
-                <p>₹399</p>
-
-                <button>Add to Cart</button>
-
-            </div>
-
-            <div class="product-card">
-
-                <img src="../images/plant2.jpg" alt="Plant">
-
-                <h3>Money Plant</h3>
-
-                <p>₹299</p>
-
-                <button>Add to Cart</button>
-
-            </div>
-
-            <div class="product-card">
-
-                <img src="../images/plant3.jpg" alt="Plant">
-
-                <h3>Peace Lily</h3>
-
-                <p>₹499</p>
-
-                <button>Add to Cart</button>
-
-            </div>
-
-        </div>
-
-    </section>
+    <div id="category-products"></div>
 
     <!-- Why Choose Us -->
 
@@ -157,15 +135,15 @@
             </div>
 
             <div>
-                <i class="fa-solid fa-truck"></i>
-                <h3>Fast Delivery</h3>
-                <p>Quick delivery across India.</p>
+                <i class="fa-solid fa-medal"></i>
+                <h3>Premium Quality</h3>
+                <p>Hand-picked plants and verified seeds.</p>
             </div>
 
             <div>
-                <i class="fa-solid fa-credit-card"></i>
-                <h3>Secure Payment</h3>
-                <p>UPI, Google Pay, PhonePe and Cards.</p>
+                <i class="fa-solid fa-truck-fast"></i>
+                <h3>Fast Delivery</h3>
+                <p>Quick delivery across India.</p>
             </div>
 
             <div>
@@ -182,37 +160,55 @@
 
     <section class="reviews">
 
-        <h2>Customer Reviews</h2>
+        <h2>Customers Are Saying</h2>
 
         <div class="review-container">
 
             <div class="review">
 
-                <h3>Rahul</h3>
+                <div class="stars">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
 
-                <p>
-                    Amazing quality plants. Delivery was very fast.
-                </p>
+                <p>Amazing quality plants. Delivery was very fast.</p>
+
+                <h3>Rahul</h3>
 
             </div>
 
             <div class="review">
+
+                <div class="stars">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <p>Beautiful indoor plants with affordable prices.</p>
 
                 <h3>Priya</h3>
 
-                <p>
-                    Beautiful indoor plants with affordable prices.
-                </p>
-
             </div>
 
             <div class="review">
 
-                <h3>Arjun</h3>
+                <div class="stars">
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-solid fa-star"></i>
+                    <i class="fa-regular fa-star"></i>
+                </div>
 
-                <p>
-                    Highly recommend Green Hub.
-                </p>
+                <p>Highly recommend Green Hub.</p>
+
+                <h3>Arjun</h3>
 
             </div>
 
@@ -220,54 +216,84 @@
 
     </section>
 
-    <!-- Newsletter -->
-
-    <section class="newsletter">
-
-        <h2>Subscribe</h2>
-
-        <p>Get offers and latest arrivals.</p>
-
-        <input type="email" placeholder="Enter your email">
-
-        <button>Subscribe</button>
-
-    </section>
-
     <!-- Footer -->
 
     <footer>
 
-        <h2>Green Hub</h2>
+        <div class="footer-grid">
 
-        <p>
-            Your trusted online nursery for healthy plants,
-            flowers and gardening accessories.
-        </p>
+            <div class="footer-brand">
 
-        <p>
+                <h2><i class="fa-solid fa-seedling"></i> Green Hub</h2>
 
-            Email :
-            support@greenhub.com
+                <p>Your trusted online nursery for healthy plants, flowers and gardening accessories. Your dream garden is just a click away.</p>
 
-        </p>
+                <div class="footer-social">
 
-        <p>
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
 
-            Phone :
-            +91 9876543210
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
 
-        </p>
+                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
 
-        <p>
+                    <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
 
-            © 2026 Green Hub.
-            All Rights Reserved.
+                </div>
 
-        </p>
+            </div>
+
+            <div class="footer-links">
+
+                <h3>Quick Links</h3>
+
+                <a href="index.html">Home</a>
+
+                <a href="products.html">Products</a>
+
+                <a href="about.html">About</a>
+
+                <a href="contact.html">Contact</a>
+
+                <a href="login.html">Login</a>
+
+            </div>
+
+            <div class="footer-contact">
+
+                <h3>Get In Touch</h3>
+
+                <p><i class="fa-solid fa-location-dot"></i> 24, Green Street, Chennai, Tamil Nadu</p>
+
+                <p><i class="fa-solid fa-envelope"></i> support@greenhub.com</p>
+
+                <p><i class="fa-solid fa-phone"></i> +91 9876543210</p>
+
+            </div>
+
+            <div class="newsletter">
+
+                <h3>Our Newsletter</h3>
+
+                <p>Subscribe to get news about special discounts.</p>
+
+                <input type="email" placeholder="Enter your email">
+
+                <button type="button">Subscribe</button>
+
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+
+            <p>© 2026 Green Hub. All Rights Reserved.</p>
+
+        </div>
 
     </footer>
 
 <script src="../js/script.js"></script>
+<script src="../js/products.js"></script>
+<script src="../js/home.js"></script>
 </body>
 </html>

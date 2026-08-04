@@ -1,0 +1,142 @@
+.orders-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.order-row {
+  cursor: pointer;
+}
+
+.order-table th:first-child,
+.order-table td:first-child {
+  font-weight: 600;
+}
+
+.filter-select {
+  min-width: 130px;
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-range input {
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.date-range input:focus {
+  outline: 2px solid var(--green-600);
+  outline-offset: -1px;
+  border-color: transparent;
+}
+
+.badge-payment-pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.badge-payment-paid {
+  background: var(--green-100);
+  color: #16621f;
+}
+
+.badge-payment-failed {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.badge-payment-refunded {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.badge-order-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-order-shipped {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.badge-order-delivered {
+  background: var(--green-100);
+  color: #16621f;
+}
+
+.badge-order-cancelled {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.order-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.detail-grid p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.address-line {
+  white-space: pre-wrap;
+  margin: 0;
+}
+
+.thumb-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.status-editor {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.status-editor select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.items-table td {
+  white-space: normal;
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: 16px;
+}
+
+.order-total strong {
+  font-size: 20px;
+  color: var(--green-700);
+}
+
+@media (max-width: 640px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}

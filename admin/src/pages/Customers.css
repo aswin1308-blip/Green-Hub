@@ -1,0 +1,87 @@
+.customers-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.customer-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--green-700);
+  font-weight: 600;
+  font-size: 15px;
+  text-align: left;
+}
+
+.customer-link:hover {
+  text-decoration: underline;
+}
+
+.sub {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.order-count {
+  font-weight: 600;
+}
+
+.badge-blocked {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.customer-history {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.history-meta {
+  font-size: 14px;
+}
+
+.history-table td {
+  white-space: nowrap;
+}
+
+.badge-order-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.badge-order-shipped {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.badge-order-delivered {
+  background: var(--green-100);
+  color: #16621f;
+}
+
+.badge-order-cancelled {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.badge-payment-pending {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.badge-payment-paid {
+  background: var(--green-100);
+  color: #16621f;
+}
+
+.badge-payment-failed {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.badge-payment-refunded {
+  background: #ede9fe;
+  color: #5b21b6;
+}

@@ -25,7 +25,7 @@ const getOrders = async (req, res) => {
 
     const orders = await Order.find()
       .populate("user")
-      .populate("products.product");
+      .populate("items.product");
 
     res.status(200).json({
       success: true,
@@ -46,7 +46,7 @@ const getOrder = async (req, res) => {
 
     const order = await Order.findById(req.params.id)
       .populate("user")
-      .populate("products.product");
+      .populate("items.product");
 
     res.status(200).json({
       success: true,

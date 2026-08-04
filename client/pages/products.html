@@ -13,206 +13,183 @@
 
 <body>
 
-<!-- Header -->
+    <!-- Announcement Ticker -->
 
-<header>
+    <div class="gh-ticker">
 
-    <div class="logo">
-        <i class="fa-solid fa-seedling"></i>
-        <h2>Green Hub</h2>
+        <div class="gh-ticker-track">
+
+            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Get 25% Flat Discount on Seeds</span>
+
+            <span><i class="fa-solid fa-truck-fast"></i> Free Delivery on Orders Above ₹499</span>
+
+            <span><i class="fa-solid fa-tag"></i> Use Code: GREEN25 at Checkout</span>
+
+            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Get 25% Flat Discount on Seeds</span>
+
+            <span><i class="fa-solid fa-truck-fast"></i> Free Delivery on Orders Above ₹499</span>
+
+            <span><i class="fa-solid fa-tag"></i> Use Code: GREEN25 at Checkout</span>
+
+        </div>
+
     </div>
 
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="products.html">Products</a>
-        <a href="about.html">About</a>
-        <a href="contact.html">Contact</a>
-        <a href="cart.html">
+    <!-- Header -->
+
+    <header>
+
+        <div class="logo">
+            <i class="fa-solid fa-seedling"></i>
+            <h2>Green Hub</h2>
+        </div>
+
+        <nav>
+
+            <a href="index.html">Home</a>
+
+            <a href="products.html">Products</a>
+
+            <a href="about.html">About</a>
+
+            <a href="contact.html">Contact</a>
+
+            <a href="login.html">Login</a>
+
+        </nav>
+
+        <div class="icons">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
+
+            <i class="fa-solid fa-heart"></i>
+
             <i class="fa-solid fa-cart-shopping"></i>
-        </a>
-    </nav>
 
-</header>
+            <i class="fa-solid fa-user"></i>
 
-<!-- Banner -->
+        </div>
 
-<section class="page-banner">
+        <button class="hamburger" type="button" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
 
-    <h1>Our Plants Collection</h1>
+    </header>
 
-    <p>Choose from hundreds of healthy plants.</p>
+    <!-- Page Banner -->
 
-</section>
+    <section class="page-banner">
 
-<!-- Search -->
+        <h1>Our Plants Collection</h1>
 
-<section class="search-section">
+        <p>Choose from hundreds of healthy plants.</p>
 
-    <input type="text"
-    placeholder="Search Plants...">
+    </section>
 
-    <button>Search</button>
+    <!-- Search -->
 
-</section>
+    <section class="search-section">
 
-<!-- Categories -->
+        <input type="text"
+        placeholder="Search Plants...">
 
-<section class="categories">
+        <button>Search</button>
 
-    <h2>Categories</h2>
+    </section>
 
-    <div class="category-container">
+    <!-- Categories -->
 
-        <button>Indoor Plants</button>
+    <section class="categories">
 
-        <button>Outdoor Plants</button>
+        <h2>Categories</h2>
 
-        <button>Flower Plants</button>
+        <div class="category-container" id="category-filter">
 
-        <button>Fruit Trees</button>
+        </div>
 
-        <button>Medicinal Plants</button>
+    </section>
 
-    </div>
+    <!-- Products by Category -->
 
-</section>
+    <div id="category-products"></div>
 
-<!-- Products -->
+    <!-- Footer -->
 
-<section class="products">
+    <footer>
 
-<h2>Available Plants</h2>
+        <div class="footer-grid">
 
-<div class="product-container">
+            <div class="footer-brand">
 
-<div class="product-card">
+                <h2><i class="fa-solid fa-seedling"></i> Green Hub</h2>
 
-<img src="../images/plant1.jpg" alt="">
+                <p>Your trusted online nursery for healthy plants, flowers and gardening accessories. Your dream garden is just a click away.</p>
 
-<h3>Snake Plant</h3>
+                <div class="footer-social">
 
-<p>₹399</p>
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
 
-<p>⭐⭐⭐⭐⭐</p>
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
 
-<a href="product-details.html">
-<button>View Details</button>
-</a>
+                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
 
-<button>Add to Cart</button>
+                    <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
 
-</div>
+                </div>
 
-<div class="product-card">
+            </div>
 
-<img src="../images/plant2.jpg" alt="">
+            <div class="footer-links">
 
-<h3>Money Plant</h3>
+                <h3>Quick Links</h3>
 
-<p>₹299</p>
+                <a href="index.html">Home</a>
 
-<p>⭐⭐⭐⭐</p>
+                <a href="products.html">Products</a>
 
-<a href="product-details.html">
-<button>View Details</button>
-</a>
+                <a href="about.html">About</a>
 
-<button>Add to Cart</button>
+                <a href="contact.html">Contact</a>
 
-</div>
+                <a href="login.html">Login</a>
 
-<div class="product-card">
+            </div>
 
-<img src="../images/plant3.jpg" alt="">
+            <div class="footer-contact">
 
-<h3>Peace Lily</h3>
+                <h3>Get In Touch</h3>
 
-<p>₹499</p>
+                <p><i class="fa-solid fa-location-dot"></i> 24, Green Street, Chennai, Tamil Nadu</p>
 
-<p>⭐⭐⭐⭐⭐</p>
+                <p><i class="fa-solid fa-envelope"></i> support@greenhub.com</p>
 
-<a href="product-details.html">
-<button>View Details</button>
-</a>
+                <p><i class="fa-solid fa-phone"></i> +91 9876543210</p>
 
-<button>Add to Cart</button>
+            </div>
 
-</div>
+            <div class="newsletter">
 
-<div class="product-card">
+                <h3>Our Newsletter</h3>
 
-<img src="../images/plant4.jpg" alt="">
+                <p>Subscribe to get news about special discounts.</p>
 
-<h3>Aloe Vera</h3>
+                <input type="email" placeholder="Enter your email">
 
-<p>₹199</p>
+                <button type="button">Subscribe</button>
 
-<p>⭐⭐⭐⭐⭐</p>
+            </div>
 
-<a href="product-details.html">
-<button>View Details</button>
-</a>
+        </div>
 
-<button>Add to Cart</button>
+        <div class="footer-bottom">
 
-</div>
+            <p>© 2026 Green Hub. All Rights Reserved.</p>
 
-<div class="product-card">
+        </div>
 
-<img src="../images/plant5.jpg" alt="">
-
-<h3>Rose Plant</h3>
-
-<p>₹349</p>
-
-<p>⭐⭐⭐⭐</p>
-
-<a href="product-details.html">
-<button>View Details</button>
-</a>
-
-<button>Add to Cart</button>
-
-</div>
-
-<div class="product-card">
-
-<img src="../images/plant6.jpg" alt="">
-
-<h3>Mango Tree</h3>
-
-<p>₹699</p>
-
-<p>⭐⭐⭐⭐⭐</p>
-
-<a href="product-details.html">
-<button>View Details</button>
-</a>
-
-<button>Add to Cart</button>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- Footer -->
-
-<footer>
-
-<h2>Green Hub</h2>
-
-<p>Your trusted online nursery.</p>
-
-<p>Email : support@greenhub.com</p>
-
-<p>Phone : +91 9876543210</p>
-
-<p>© 2026 Green Hub</p>
-
-</footer>
+    </footer>
 
 <script src="../js/script.js"></script>
+<script src="../js/products.js"></script>
 </body>
 </html>
