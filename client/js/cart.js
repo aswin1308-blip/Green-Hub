@@ -69,6 +69,10 @@ function ghGuestCartCount() {
 
 /* ---------- asset / money helpers (shared) ---------- */
 
+/* Builds a usable image URL from a stored path.
+   New uploads store full https:// Cloudinary URLs (passed through
+   unchanged). Old "/uploads/..." paths (legacy local uploads) still
+   need the API base prefixed — that's the fallback below. */
 function ghAssetUrl(path) {
   if (!path) return "";
   if (/^https?:\/\//.test(path)) return path;
@@ -168,6 +172,37 @@ async function ghAddToCart(productId, quantity) {
   }
   ghSaveGuestCart(cart);
   return { success: true };
+}
+
+/* ---------- wishlist ---------- */
+
+async function ghAddToWishlist(productId) {
+  if (!ghIsLoggedIn()) {
+    throw new Error("Please log in to use your wishlist.");
+  }
+  return ghApiRequest("/api/wishlist/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId }),
+  });
+}
+
+async function ghRemoveFromWishlist(productId) {
+  if (!ghIsLoggedIn()) {
+    throw new Error("Please log in to use your wishlist.");
+  }
+  return ghApiRequest("/api/wishlist/" + encodeURIComponent(productId), {
+    method: "DELETE",
+  });
+}
+
+/* Returns the wishlist product objects (populated by the backend). */
+async function ghGetWishlist() {
+  if (!ghIsLoggedIn()) return [];
+  const data = await ghApiRequest("/api/wishlist");
+  return (data.wishlist || [])
+    .map((entry) => entry.product)
+    .filter(Boolean);
 }
 
 async function ghSyncGuestCartToServer() {

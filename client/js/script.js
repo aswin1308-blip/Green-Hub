@@ -471,6 +471,84 @@ function ghRenderAuthUI() {
 ghRenderAuthUI();
 
 /* ==========================================
+        USER ICON IN HEADER (name/email chip)
+========================================== */
+
+function ghRenderUserIcon() {
+
+    const userIcon = document.querySelector(".icons .fa-user");
+
+    if (!userIcon) return;
+
+    const iconsGroup = userIcon.closest(".icons");
+
+    if (!iconsGroup) return;
+
+    if (typeof ghIsLoggedIn !== "function" || !ghIsLoggedIn()) {
+
+        userIcon.style.cursor = "pointer";
+
+        userIcon.addEventListener("click", function () {
+
+            window.location.href = "login.html";
+
+        });
+
+        return;
+
+    }
+
+    const user = ghGetUser();
+
+    const name = (user && (user.name || user.email)) || "Account";
+
+    const email = (user && user.email) || "";
+
+    const chip = document.createElement("a");
+
+    chip.className = "gh-user-chip";
+
+    chip.href = "profile.html";
+
+    chip.title = email || "My Profile";
+
+    chip.innerHTML = '<i class="fa-solid fa-user"></i><span></span>';
+
+    chip.querySelector("span").textContent = name;
+
+    userIcon.replaceWith(chip);
+
+}
+
+ghRenderUserIcon();
+
+/* ==========================================
+        PROFILE PAGE LOGOUT
+========================================== */
+
+const profileLogout = document.getElementById("profile-logout");
+
+if (profileLogout) {
+
+    profileLogout.addEventListener("click", function (e) {
+
+        e.preventDefault();
+
+        ghClearSession();
+
+        showToast("Logged out");
+
+        setTimeout(() => {
+
+            window.location.href = "login.html";
+
+        }, 600);
+
+    });
+
+}
+
+/* ==========================================
         CONTACT FORM
 ========================================== */
 
@@ -686,28 +764,34 @@ if (searchSection) {
 ========================================== */
 
 /* ==========================================
-        WISHLIST
+        WISHLIST (navbar heart -> wishlist page)
 ========================================== */
 
-let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-
-document.querySelectorAll(".fa-heart").forEach(icon => {
+document.querySelectorAll(".icons .fa-heart").forEach(icon => {
 
     icon.style.cursor = "pointer";
 
     icon.addEventListener("click", function () {
 
-        this.style.color = "red";
-
-        showToast("Added to Wishlist");
-
-        wishlist.push("Plant");
-
-        localStorage.setItem("wishlist", JSON.stringify(wishlist));
+        ghGoToWishlist();
 
     });
 
 });
+
+function ghGoToWishlist() {
+
+    if (typeof ghIsLoggedIn === "function" && ghIsLoggedIn()) {
+
+        window.location.href = "wishlist.html";
+
+    } else {
+
+        window.location.href = "login.html?redirect=" + encodeURIComponent("wishlist.html");
+
+    }
+
+}
 
 /* ==========================================
         CART ICON NAVIGATION

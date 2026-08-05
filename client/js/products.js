@@ -45,6 +45,14 @@ function ghBuildProductCard(product) {
   ghHandleImageError(img);
   media.appendChild(img);
 
+  const wishBtn = document.createElement("button");
+  wishBtn.type = "button";
+  wishBtn.className = "gh-wish-btn";
+  wishBtn.dataset.productId = product._id;
+  wishBtn.title = "Add to Wishlist";
+  wishBtn.innerHTML = '<i class="fa-regular fa-heart"></i>';
+  media.appendChild(wishBtn);
+
   const percent = ghDiscountPercent(product);
   if (percent > 0) {
     const badge = document.createElement("span");
@@ -105,6 +113,85 @@ function ghBuildProductCard(product) {
   });
 
   return card;
+}
+
+/* ---------- wishlist (heart buttons on product cards) ---------- */
+
+let ghWishlistIds = new Set();
+
+/* Refresh the filled/unfilled heart state on every rendered card. */
+async function ghLoadWishlistState() {
+  if (typeof ghIsLoggedIn !== "function" || !ghIsLoggedIn()) return;
+  try {
+    const products = await ghGetWishlist();
+    ghWishlistIds = new Set(
+      products.map((p) => p && p._id).filter(Boolean)
+    );
+    document.querySelectorAll(".gh-wish-btn").forEach((btn) => {
+      const icon = btn.querySelector("i");
+      if (ghWishlistIds.has(btn.dataset.productId)) {
+        btn.classList.add("active");
+        if (icon) icon.className = "fa-solid fa-heart";
+      }
+    });
+  } catch (error) {
+    console.error("Failed to load wishlist state:", error);
+  }
+}
+
+function ghHandleWishlistClick(event) {
+  const btn = event.target.closest(".gh-wish-btn");
+  if (!btn) return;
+
+  const productId = btn.dataset.productId;
+  if (!productId) return;
+
+  if (typeof ghIsLoggedIn !== "function" || !ghIsLoggedIn()) {
+    if (typeof showToast === "function") {
+      showToast("Please log in to add items to your wishlist");
+    }
+    setTimeout(() => {
+      window.location.href =
+        "login.html?redirect=" +
+        encodeURIComponent(window.location.pathname.split("/").pop());
+    }, 800);
+    return;
+  }
+
+  const icon = btn.querySelector("i");
+  const isActive = btn.classList.contains("active");
+  btn.disabled = true;
+
+  const action = isActive
+    ? ghRemoveFromWishlist(productId)
+    : ghAddToWishlist(productId);
+
+  action
+    .then(() => {
+      if (isActive) {
+        btn.classList.remove("active");
+        if (icon) icon.className = "fa-regular fa-heart";
+        if (typeof showToast === "function") showToast("Removed from Wishlist");
+      } else {
+        btn.classList.add("active");
+        if (icon) icon.className = "fa-solid fa-heart";
+        if (typeof showToast === "function") showToast("Added to Wishlist");
+      }
+    })
+    .catch((error) => {
+      console.error("Wishlist update failed:", error);
+      if (typeof showToast === "function") {
+        showToast(error.message || "Could not update wishlist.");
+      }
+    })
+    .finally(() => {
+      btn.disabled = false;
+    });
+}
+
+function ghBindWishlistButtons(scope) {
+  if (!scope || typeof scope.addEventListener !== "function") return;
+  scope.addEventListener("click", ghHandleWishlistClick);
 }
 
 /* ---------- category sections ---------- */
@@ -168,6 +255,7 @@ async function ghInitCategoryProducts() {
   if (!mount) return;
 
   ghBindCartButtons(mount);
+  ghBindWishlistButtons(mount);
 
   try {
     const data = await ghFetchJSON(GH_API_BASE + "/api/categories");
@@ -181,6 +269,7 @@ async function ghInitCategoryProducts() {
     categories.forEach(ghRenderCategorySection);
     ghRenderCategoryButtons(categories);
     ghRenderShopByCategory(categories);
+    ghLoadWishlistState();
   } catch (error) {
     mount.appendChild(
       ghNote("Unable to load categories. Please try again later.")

@@ -72,6 +72,7 @@ nav a:hover{
 
 .icons{
     display:flex;
+    align-items:center;
     gap:25px;
 }
 
@@ -82,6 +83,42 @@ nav a:hover{
 }
 
 .icons i:hover{
+    color:#2e7d32;
+    transform:scale(1.15);
+}
+
+/* Logged-in user chip shown in the icons group
+   (icon + name, vertically centered, ellipsis if long) */
+
+.gh-user-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+    color:#333;
+    font-weight:500;
+    max-width:210px;
+    transition:.3s;
+}
+
+.gh-user-chip i{
+    cursor:pointer;
+    font-size:20px;
+}
+
+.gh-user-chip span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    max-width:140px;
+}
+
+.gh-user-chip:hover{
+    color:#2e7d32;
+    transform:scale(1.03);
+}
+
+.gh-user-chip:hover i{
     color:#2e7d32;
     transform:scale(1.15);
 }
@@ -2263,6 +2300,44 @@ header{
 
 .product-card:hover .product-media img{
     transform:scale(1.06);
+}
+
+/* Wishlist heart button on product cards (top-right of media) */
+
+.gh-wish-btn{
+    position:absolute;
+    top:12px;
+    right:12px;
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    border:1px solid var(--gh-border);
+    background:rgba(255,255,255,.92);
+    color:#555;
+    font-size:16px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 12px rgba(0,0,0,.14);
+    transition:.3s;
+    z-index:2;
+}
+
+.gh-wish-btn:hover{
+    color:#c62828;
+    transform:scale(1.12);
+}
+
+.gh-wish-btn.active{
+    color:#c62828;
+    border-color:rgba(198,40,40,.4);
+}
+
+.gh-wish-btn:disabled{
+    opacity:.6;
+    cursor:wait;
+    transform:scale(1);
 }
 
 .gh-badge{

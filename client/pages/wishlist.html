@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Hub | Shopping Cart</title>
+    <title>Green Hub | My Wishlist</title>
 
     <link rel="stylesheet" href="../css/style.css">
 
@@ -29,10 +29,13 @@
             <a href="products.html">Products</a>
             <a href="about.html">About</a>
             <a href="contact.html">Contact</a>
+            <a href="login.html">Login</a>
 
         </nav>
 
         <div class="icons">
+
+            <i class="fa-solid fa-magnifying-glass"></i>
 
             <i class="fa-solid fa-heart"></i>
 
@@ -48,38 +51,46 @@
 
     </header>
 
-    <!-- Cart Section -->
+    <!-- Login Gate -->
 
-    <section class="cart">
+    <section class="cart" id="wishlist-gate" style="display:none;">
 
-        <h1>Your Shopping Cart</h1>
+        <h1>Your Wishlist</h1>
 
-        <table border="1" cellpadding="15" id="cart-table">
+        <p style="text-align:center;">Please log in to view and manage your wishlist.</p>
+
+        <p style="text-align:center; margin-top:20px;">
+            <a href="login.html?redirect=wishlist.html" class="btn">Login to Continue</a>
+        </p>
+
+    </section>
+
+    <!-- Wishlist Section -->
+
+    <section class="cart" id="wishlist-content" style="display:none;">
+
+        <h1>My Wishlist</h1>
+
+        <table border="1" cellpadding="15" id="wishlist-table">
 
             <tr>
 
                 <th>Plant</th>
                 <th>Image</th>
                 <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
                 <th>Action</th>
 
             </tr>
 
-            <tbody id="cart-table-body">
+            <tbody id="wishlist-table-body">
 
             </tbody>
 
         </table>
 
-    </section>
-
-    <!-- Order Summary -->
-
-    <section class="summary" id="cart-summary">
-
-        <p>Loading your cart...</p>
+        <p style="text-align:center; margin-top:30px;">
+            <a href="products.html" class="btn">Continue Shopping</a>
+        </p>
 
     </section>
 
@@ -89,7 +100,7 @@
 
         <h2>You May Also Like</h2>
 
-        <div class="product-container" id="cart-recommended">
+        <div class="product-container" id="wishlist-recommended">
 
             <p>Loading recommended products...</p>
 
@@ -114,8 +125,9 @@
     </footer>
 
 <script src="../js/cart.js?v=2"></script>
-<script src="../js/script.js?v=4"></script>
+<script src="../js/script.js?v=5"></script>
 <script src="../js/products.js?v=2"></script>
-<script src="../js/cart-page.js?v=2"></script>
+<script src="../js/wishlist.js"></script>
 </body>
+
 </html>

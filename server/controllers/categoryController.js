@@ -1,6 +1,7 @@
 const Category = require("../models/Category");
 const Product = require("../models/Product");
 const slugify = require("../utils/slugify");
+const imageUrl = require("../utils/imageUrl");
 
 // Public: list all categories
 const getCategories = async (req, res, next) => {
@@ -23,7 +24,7 @@ const createCategory = async (req, res, next) => {
     const { name, slug, description, image } = req.body;
 
     const uploadedImage = req.file
-      ? `/uploads/${req.file.filename}`
+      ? imageUrl(req.file)
       : undefined;
 
     const category = await Category.create({
@@ -58,7 +59,7 @@ const updateCategory = async (req, res, next) => {
     }
 
     if (req.file) {
-      category.image = `/uploads/${req.file.filename}`;
+      category.image = imageUrl(req.file);
     } else if (image !== undefined) {
       category.image = image;
     }

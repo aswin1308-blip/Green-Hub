@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const mongoose = require("mongoose");
 const slugify = require("../utils/slugify");
+const imageUrl = require("../utils/imageUrl");
 
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -159,7 +160,7 @@ const createProduct = async (req, res, next) => {
     }
 
     const uploadedImages = (req.files || []).map(
-      (file) => `/uploads/${file.filename}`
+      (file) => imageUrl(file)
     );
     const bodyImages = Array.isArray(req.body.images)
       ? req.body.images
@@ -229,7 +230,7 @@ const updateProduct = async (req, res, next) => {
     }
 
     const uploadedImages = (req.files || []).map(
-      (file) => `/uploads/${file.filename}`
+      (file) => imageUrl(file)
     );
     const hasImagesField = Object.prototype.hasOwnProperty.call(req.body, "images");
     const rawImages = req.body.images;

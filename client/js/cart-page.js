@@ -220,6 +220,7 @@
   const recContainer = document.getElementById("cart-recommended");
   if (recContainer) {
     ghBindCartButtons(recContainer);
+    ghBindWishlistButtons(recContainer);
     try {
       const res = await fetch(
         ghApiBase() + "/api/products?status=active&limit=4"
