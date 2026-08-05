@@ -48,6 +48,7 @@ function ghRenderHeroSlides(sources, slidesEl, dotsEl) {
     img.src = src;
     img.alt = "Green Hub";
     img.setAttribute("data-nozoom", "");
+    ghHandleImageError(img);
     slide.appendChild(img);
 
     slidesEl.appendChild(slide);

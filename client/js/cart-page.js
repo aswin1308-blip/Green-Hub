@@ -70,6 +70,7 @@
     img.src = ghAssetUrl(images[0]) || "../images/plant1.jpg";
     img.alt = (item.product && item.product.name) || "Product";
     img.width = 100;
+    ghHandleImageError(img);
     imgTd.appendChild(img);
 
     const priceTd = document.createElement("td");

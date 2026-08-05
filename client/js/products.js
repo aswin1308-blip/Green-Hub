@@ -42,6 +42,7 @@ function ghBuildProductCard(product) {
   img.src = ghAssetUrl((product.images && product.images[0]) || "");
   img.alt = product.name || "Product";
   img.loading = "lazy";
+  ghHandleImageError(img);
   media.appendChild(img);
 
   const percent = ghDiscountPercent(product);
@@ -204,9 +205,7 @@ function ghRenderShopByCategory(categories) {
     img.src = ghAssetUrl(category.image);
     img.alt = category.name;
     img.loading = "lazy";
-    img.addEventListener("error", () => {
-      img.style.display = "none";
-    });
+    ghHandleImageError(img);
     card.appendChild(img);
 
     const heading = document.createElement("h3");

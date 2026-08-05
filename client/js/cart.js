@@ -79,6 +79,35 @@ function ghMoney(amount) {
   return "₹" + Number(amount || 0).toLocaleString("en-IN");
 }
 
+/* ----------------------------------------------------------------
+   NOTE: server/uploads/ is in .gitignore (NOT version-controlled),
+   so uploaded product images only exist on the machine where they
+   were uploaded. On another teammate's machine the API still returns
+   stored paths like "/uploads/xxx.jpg" (ghAssetUrl prefixes them with
+   the API base -> URL construction is correct), but the actual file
+   is missing there -> 404 in the Network tab and a broken image icon.
+   Team fix options: share server/uploads/ separately out-of-band,
+   use a hosted image service, or re-upload product images on each
+   machine (each machine has its own MongoDB Atlas connection unless
+   the team shares the same cluster).
+   Until then, every product/category <img> gets ghHandleImageError()
+   so a failed load swaps in GH_PLACEHOLDER_IMAGE instead of showing
+   a broken icon. This file (client/images/) IS version-controlled.
+---------------------------------------------------------------- */
+
+const GH_PLACEHOLDER_IMAGE = "../images/no-image.svg";
+
+/* Attach an onerror fallback: if the image 404s (missing upload), the
+   src is empty, or the URL is broken, show the local placeholder. */
+function ghHandleImageError(img) {
+  if (!img || !img.addEventListener) return;
+  img.addEventListener("error", function () {
+    if (img.dataset.ghFallback) return;
+    img.dataset.ghFallback = "1";
+    img.src = GH_PLACEHOLDER_IMAGE;
+  });
+}
+
 /* ---------- server cart ---------- */
 
 function ghAuthHeaders(extra) {

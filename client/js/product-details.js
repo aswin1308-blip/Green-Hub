@@ -63,6 +63,7 @@
   if (imgEl) {
     imgEl.src = ghAssetUrl(images[0]) || "../images/plant1.jpg";
     imgEl.alt = product.name || "Product";
+    ghHandleImageError(imgEl);
   }
   if (titleEl && product.name) {
     titleEl.textContent = "Green Hub | " + product.name;
