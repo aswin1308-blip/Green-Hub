@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 96" width="160" height="96">
+  <defs>
+    <linearGradient id="lgbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E7D32"/>
+      <stop offset="1" stop-color="#1B5E20"/>
+    </linearGradient>
+    <linearGradient id="lgleaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#A5D6A7"/>
+      <stop offset="1" stop-color="#66BB6A"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="12" width="72" height="72" rx="20" fill="url(#lgbg)"/>
+  <path d="M40 74c0-16.5 7.5-26.5 20-31.5-2.5 16.5-10 28-20 31.5z" fill="url(#lgleaf)"/>
+  <path d="M40 74c-2.5-10-2.5-20 1.2-28.8 2.5 10 3.8 20-1.2 28.8z" fill="url(#lgleaf)"/>
+  <path d="M40 74c3.8-13.8 11.2-24 21.2-32.5" fill="none" stroke="#F8FFF8" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="40" cy="74" r="4.5" fill="#F8FFF8"/>
+  <text x="92" y="46" font-family="Poppins, Arial, sans-serif" font-size="26" font-weight="700" fill="#1B4332">Green</text>
+  <text x="158" y="46" font-family="Poppins, Arial, sans-serif" font-size="26" font-weight="700" fill="#2E7D32">Hub</text>
+  <text x="94" y="66" font-family="Poppins, Arial, sans-serif" font-size="12" font-weight="500" letter-spacing="2.5" fill="#6B7280">ONLINE NURSERY</text>
+</svg>

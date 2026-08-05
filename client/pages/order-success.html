@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Hub | Checkout</title>
-    <meta name="description" content="Complete your plant order securely with Green Hub - fast delivery across India.">
+    <title>Green Hub | Order Placed</title>
+    <meta name="description" content="Your Green Hub order has been placed successfully.">
 
     <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -281,132 +281,34 @@
     </aside>
 
     <main>
-
-        <div class="gh-page-banner gh-page-banner--compact">
+        <section class="gh-section">
             <div class="gh-container">
-                <nav class="gh-breadcrumb" aria-label="Breadcrumb">
-                    <a href="index.html">Home</a>
-                    <span class="gh-breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
-                    <a href="cart.html">Cart</a>
-                    <span class="gh-breadcrumb-sep"><i class="fa-solid fa-chevron-right"></i></span>
-                    <span>Checkout</span>
-                </nav>
-            </div>
-        </div>
+                <div class="gh-success" data-success-root>
 
-        <section class="gh-section gh-section--compact">
-            <div class="gh-container">
-
-                <div class="gh-login-gate" data-checkout-gate style="display:none">
-                    <i class="fa-solid fa-lock"></i>
-                    <h2>Login Required</h2>
-                    <p>Please log in to complete your purchase and continue to checkout.</p>
-                    <a href="login.html?redirect=checkout.html" class="gh-btn">Login to Continue</a>
-                </div>
-
-                <div class="gh-checkout" data-checkout-root style="display:none">
-
-                    <div>
-                        <div class="gh-checkout-panel" data-gh-reveal>
-                            <h2><i class="fa-solid fa-user"></i> Contact Details</h2>
-                            <div class="gh-checkout-row">
-                                <div class="gh-checkout-field">
-                                    <label for="co-name">Full Name</label>
-                                    <input type="text" id="co-name" autocomplete="name" placeholder="Enter your full name">
-                                </div>
-                                <div class="gh-checkout-field">
-                                    <label for="co-email">Email Address</label>
-                                    <input type="email" id="co-email" autocomplete="email" placeholder="you@example.com">
-                                </div>
-                            </div>
-                            <div class="gh-checkout-field">
-                                <label for="co-phone">Phone Number</label>
-                                <input type="tel" id="co-phone" autocomplete="tel" placeholder="10-digit mobile number">
-                            </div>
-                        </div>
-
-                        <div class="gh-checkout-panel" data-gh-reveal style="margin-top:22px">
-                            <h2><i class="fa-solid fa-location-dot"></i> Delivery Address</h2>
-                            <div class="gh-checkout-field">
-                                <label for="co-address">Full Address</label>
-                                <textarea id="co-address" placeholder="House no, street, area, landmark"></textarea>
-                            </div>
-                            <div class="gh-checkout-row">
-                                <div class="gh-checkout-field">
-                                    <label for="co-city">City</label>
-                                    <input type="text" id="co-city" placeholder="City">
-                                </div>
-                                <div class="gh-checkout-field">
-                                    <label for="co-pincode">Pincode</label>
-                                    <input type="text" id="co-pincode" inputmode="numeric" placeholder="6-digit pincode">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="gh-checkout-panel" data-gh-reveal style="margin-top:22px">
-                            <h2><i class="fa-solid fa-credit-card"></i> Payment Method</h2>
-                            <div class="gh-pay-option" data-pay="UPI">
-                                <input type="radio" name="payment" value="UPI" id="pay-upi">
-                                <i class="fa-solid fa-mobile-screen"></i>
-                                <b>UPI</b>
-                            </div>
-                            <div class="gh-pay-option" data-pay="Google Pay">
-                                <input type="radio" name="payment" value="Google Pay" id="pay-gpay">
-                                <i class="fa-brands fa-google-pay"></i>
-                                <b>Google Pay</b>
-                            </div>
-                            <div class="gh-pay-option" data-pay="PhonePe">
-                                <input type="radio" name="payment" value="PhonePe" id="pay-phonepe">
-                                <i class="fa-solid fa-wallet"></i>
-                                <b>PhonePe</b>
-                            </div>
-                            <div class="gh-pay-option" data-pay="Debit / Credit Card">
-                                <input type="radio" name="payment" value="Debit / Credit Card" id="pay-card">
-                                <i class="fa-regular fa-credit-card"></i>
-                                <b>Debit / Credit Card</b>
-                            </div>
-                            <div class="gh-pay-option" data-pay="Cash on Delivery">
-                                <input type="radio" name="payment" value="Cash on Delivery" id="pay-cod" checked>
-                                <i class="fa-solid fa-hand-hold-dollar"></i>
-                                <b>Cash on Delivery</b>
-                            </div>
-                        </div>
+                    <div class="gh-success-check">
+                        <i class="fa-solid fa-check"></i>
                     </div>
 
-                    <div class="gh-checkout-summary">
-                        <div class="gh-checkout-panel" data-gh-reveal>
-                            <h2><i class="fa-solid fa-bag-shopping"></i> Order Summary</h2>
-                            <div class="gh-co-items" data-co-items></div>
+                    <h1>Order Placed Successfully!</h1>
+                    <p>Thank you for shopping with Green Hub. Your order has been confirmed and our nursery team is getting your plants ready for delivery.</p>
 
-                            <div class="gh-coupon" data-coupon-form>
-                                <input type="text" placeholder="Coupon code (e.g. GREEN10)" data-coupon-input aria-label="Coupon code">
-                                <button type="button" data-coupon-apply>Apply</button>
-                            </div>
-                            <div class="gh-coupon-applied" data-coupon-applied style="display:none"></div>
+                    <div class="gh-order-id">
+                        Order ID: <span data-order-id>........</span>
+                    </div>
 
-                            <div class="gh-price-breakdown" data-breakdown></div>
+                    <div class="gh-order-box" data-order-box style="display:none">
+                        <h3>Order Summary</h3>
+                        <div data-order-details></div>
+                    </div>
 
-                            <button type="button" class="gh-btn gh-btn--big gh-place-btn" data-place-order>
-                                <i class="fa-solid fa-shield-halved"></i> <span data-place-text>Place Order</span>
-                            </button>
-                            <div class="gh-secure-note">
-                                <i class="fa-solid fa-lock"></i> 100% secure checkout. Order confirmation will be sent by email.
-                            </div>
-                        </div>
+                    <div class="gh-success-actions">
+                        <a href="orders.html" class="gh-btn gh-btn--big"><i class="fa-solid fa-truck-fast"></i> Track My Order</a>
+                        <a href="products.html" class="gh-btn gh-btn--big gh-btn--outline"><i class="fa-solid fa-bag-shopping"></i> Continue Shopping</a>
                     </div>
 
                 </div>
-
-                <div class="gh-checkout-empty" data-checkout-empty style="display:none">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <h3>Your cart is empty</h3>
-                    <p>Looks like you haven't added anything to your cart yet.</p>
-                    <a href="products.html" class="gh-btn">Browse Products</a>
-                </div>
-
             </div>
         </section>
-
     </main>
 
     <footer class="gh-footer">
@@ -520,6 +422,6 @@
     </script>
     <script src="../js/cart.js?v=2"></script>
     <script src="../js/premium.js?v=2"></script>
-    <script src="../js/checkout.js?v=4"></script>
+    <script src="../js/order-success.js?v=1"></script>
 </body>
 </html>

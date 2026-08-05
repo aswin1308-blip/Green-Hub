@@ -1,282 +1,378 @@
 /* ==========================================
-        GREEN HUB - CHECKOUT.JS
-        Login gate + order summary + payment path.
-        - Fetches the logged-in customer's latest profile from MongoDB
+        GREEN HUB - CHECKOUT.JS (premium)
+        Login gate + order summary + GST +
+        coupon + payment + place order.
+        - Loads the cart from MongoDB (guest cart
+          is synced to the server on entry)
         - Places the order via POST /api/orders
-        - Clears the cart and redirects to the Orders page
+        - Clears the cart and redirects to
+          order-success.html?id=<orderId>
 ========================================== */
 
-(async function () {
-  const gateEl = document.getElementById("require-login");
-  const contentEl = document.getElementById("checkout-content");
-  const summaryEl = document.getElementById("checkout-summary");
-  const proceedBtn = document.getElementById("proceed-to-payment");
-  const paymentSection = document.getElementById("payment-section");
-  const paymentForm = document.querySelector(".payment form");
+(function () {
+  var DELIVERY_FEE = 50;
+  var FREE_DELIVERY_MIN = 499;
+  var GST_RATE = 0.05;
 
-  const billingName = document.getElementById("billing-name");
-  const billingEmail = document.getElementById("billing-email");
-  const billingPhone = document.getElementById("billing-phone");
-  const billingAddress = document.getElementById("billing-address");
+  var gateEl = document.querySelector('[data-checkout-gate]');
+  var rootEl = document.querySelector('[data-checkout-root]');
+  var emptyEl = document.querySelector('[data-checkout-empty]');
+  var itemsEl = document.querySelector('[data-co-items]');
+  var breakdownEl = document.querySelector('[data-breakdown]');
+  var placeBtn = document.querySelector('[data-place-order]');
+  var placeText = document.querySelector('[data-place-text]');
 
-  const DELIVERY_CHARGE = 50;
+  var nameInput = document.getElementById('co-name');
+  var emailInput = document.getElementById('co-email');
+  var phoneInput = document.getElementById('co-phone');
+  var addressInput = document.getElementById('co-address');
+  var cityInput = document.getElementById('co-city');
+  var pincodeInput = document.getElementById('co-pincode');
 
-  let currentItems = [];
+  var couponInput = document.querySelector('[data-coupon-input]');
+  var couponApplyBtn = document.querySelector('[data-coupon-apply]');
+  var couponAppliedEl = document.querySelector('[data-coupon-applied]');
+
+  var currentItems = [];
+  var appliedCoupon = null; // { code, discount }
+
+  function apiBase() {
+    return (window.GH_API_BASE) || 'http://localhost:5000';
+  }
+
+  function money(n) {
+    return window.ghMoney ? window.ghMoney(n) : '₹' + Number(n || 0).toLocaleString('en-IN');
+  }
+
+  function toast(msg, isError) {
+    if (window.showToast) { window.showToast(msg, isError); return; }
+    alert(msg);
+  }
+
+  function refreshBadge() {
+    if (window.ghRefreshCartBadge) window.ghRefreshCartBadge();
+  }
 
   function showEmpty() {
-    if (!summaryEl) return;
-    summaryEl.innerHTML = "";
-    const p = document.createElement("p");
-    p.textContent = "Your cart is empty.";
-    const link = document.createElement("a");
-    link.href = "products.html";
-    link.textContent = "Browse products";
-    summaryEl.appendChild(p);
-    summaryEl.appendChild(link);
+    if (gateEl) gateEl.style.display = 'none';
+    if (rootEl) rootEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'block';
   }
 
   function showGate() {
-    if (gateEl) gateEl.style.display = "block";
-    if (contentEl) contentEl.style.display = "none";
-    if (proceedBtn) proceedBtn.style.display = "none";
+    if (gateEl) gateEl.style.display = 'block';
+    if (rootEl) rootEl.style.display = 'none';
+    if (emptyEl) emptyEl.style.display = 'none';
   }
 
-  function renderSummary(items) {
-    if (!summaryEl) return;
+  function itemPrice(product) {
+    return Number(product.discountPrice) || Number(product.price) || 0;
+  }
 
-    let subtotal = 0;
-    let itemCount = 0;
+  function subtotalOf() {
+    return currentItems.reduce(function (sum, entry) {
+      var product = entry.product || {};
+      return sum + itemPrice(product) * (parseInt(entry.quantity, 10) || 1);
+    }, 0);
+  }
 
-    summaryEl.innerHTML = "";
+  function deliveryFor(subtotal) {
+    return subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE;
+  }
 
-    items.forEach((entry) => {
-      const product = entry.product || {};
-      const price =
-        Number(product.discountPrice) || Number(product.price) || 0;
-      const qty = parseInt(entry.quantity, 10) || 1;
-      subtotal += price * qty;
-      itemCount += qty;
+  function renderItems() {
+    if (!itemsEl) return;
+    itemsEl.innerHTML = '';
+    currentItems.forEach(function (entry) {
+      var product = entry.product || {};
+      var price = itemPrice(product);
+      var qty = parseInt(entry.quantity, 10) || 1;
+      var img = window.ghAssetUrl
+        ? window.ghAssetUrl((product.images && product.images[0]) || product.image || '')
+        : (product.image || '');
 
-      const p = document.createElement("p");
-      p.textContent = (product.name || "Product") + " × " + qty;
-      const span = document.createElement("span");
-      span.textContent = ghMoney(price * qty);
-      p.appendChild(span);
-      summaryEl.appendChild(p);
+      var item = document.createElement('div');
+      item.className = 'gh-co-item';
+      item.innerHTML =
+        '<img src="' + (img || '../images/no-image.svg') + '" alt="' + String(product.name || 'Product').replace(/"/g, '&quot;') + '">' +
+        '<div class="gh-co-item-info">' +
+        '<span class="gh-co-item-name">' + String(product.name || 'Product') + '</span>' +
+        '<div class="gh-co-item-price">' + money(price) + ' each</div>' +
+        '</div>' +
+        '<span class="gh-co-qty">x ' + qty + '</span>';
+      itemsEl.appendChild(item);
+      if (window.ghHandleImageError) window.ghHandleImageError(item.querySelector('img'));
     });
-
-    const rule = document.createElement("hr");
-    summaryEl.appendChild(rule);
-
-    const sub = document.createElement("p");
-    sub.textContent = "Subtotal ";
-    const subSpan = document.createElement("span");
-    subSpan.textContent = ghMoney(subtotal);
-    sub.appendChild(subSpan);
-    summaryEl.appendChild(sub);
-
-    const delivery = document.createElement("p");
-    delivery.textContent = "Delivery Charge ";
-    const delSpan = document.createElement("span");
-    delSpan.textContent = ghMoney(DELIVERY_CHARGE);
-    delivery.appendChild(delSpan);
-    summaryEl.appendChild(delivery);
-
-    const h3 = document.createElement("h3");
-    h3.innerHTML = "Total ";
-    const totalSpan = document.createElement("span");
-    totalSpan.textContent = ghMoney(subtotal + DELIVERY_CHARGE);
-    h3.appendChild(totalSpan);
-    summaryEl.appendChild(h3);
   }
 
-  // Fetch the logged-in customer's latest profile from MongoDB
-  async function loadProfile() {
-    try {
-      const data = await ghApiRequest("/api/auth/me");
-      const u = data.user || {};
-      if (billingName && u.name) billingName.value = u.name;
-      if (billingEmail && u.email) billingEmail.value = u.email;
-      if (billingPhone && u.phone) billingPhone.value = u.phone;
-      if (billingAddress && u.address) billingAddress.value = u.address;
-    } catch (error) {
-      console.error("Failed to load profile:", error);
+  function renderBreakdown() {
+    if (!breakdownEl) return;
+    var subtotal = subtotalOf();
+    var delivery = deliveryFor(subtotal);
+    var tax = Math.round(subtotal * GST_RATE);
+    var discount = appliedCoupon ? appliedCoupon.discount : 0;
+    var total = subtotal + delivery + tax - discount;
+
+    var html =
+      '<div class="gh-bd-row"><span>Subtotal</span><b>' + money(subtotal) + '</b></div>' +
+      '<div class="gh-bd-row ' + (delivery === 0 ? 'gh-bd-free' : '') + '"><span>Delivery Charge</span><b>' + (delivery === 0 ? 'FREE' : money(delivery)) + '</b></div>' +
+      '<div class="gh-bd-row"><span>GST (' + Math.round(GST_RATE * 100) + '%)</span><b>' + money(tax) + '</b></div>' +
+      (discount > 0
+        ? '<div class="gh-bd-row gh-bd-save"><span>Coupon Discount</span><b>- ' + money(discount) + '</b></div>'
+        : '') +
+      '<div class="gh-bd-row gh-bd-total"><span>Total</span><b>' + money(total) + '</b></div>';
+    breakdownEl.innerHTML = html;
+  }
+
+  function renderCoupon() {
+    if (!couponAppliedEl) return;
+    if (appliedCoupon) {
+      couponAppliedEl.style.display = 'flex';
+      couponAppliedEl.innerHTML =
+        '<span><i class="fa-solid fa-tag"></i> ' + String(appliedCoupon.code).toUpperCase() + ' applied (- ' + money(appliedCoupon.discount) + ')</span>' +
+        '<button type="button" data-coupon-remove aria-label="Remove coupon"><i class="fa-solid fa-xmark"></i></button>';
+      var removeBtn = couponAppliedEl.querySelector('[data-coupon-remove]');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', function () {
+          appliedCoupon = null;
+          if (couponInput) couponInput.value = '';
+          couponAppliedEl.style.display = 'none';
+          renderBreakdown();
+          toast('Coupon removed');
+        });
+      }
+    } else {
+      couponAppliedEl.style.display = 'none';
     }
   }
 
-  async function init() {
-    if (!ghIsLoggedIn()) {
+  function renderAll() {
+    renderItems();
+    renderBreakdown();
+    renderCoupon();
+  }
+
+  function applyCoupon() {
+    if (!couponInput) return;
+    var code = couponInput.value.trim();
+    if (!code) {
+      toast('Enter a coupon code', true);
+      return;
+    }
+    if (couponApplyBtn) { couponApplyBtn.disabled = true; couponApplyBtn.textContent = '...'; }
+
+    fetch(apiBase() + '/api/coupons/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code, amount: subtotalOf() }),
+    })
+      .then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      })
+      .then(function (result) {
+        if (!result.ok) throw new Error(result.data.message || 'Invalid coupon');
+        appliedCoupon = { code: result.data.code, discount: Number(result.data.discount) || 0 };
+        if (couponInput) couponInput.value = result.data.code;
+        renderAll();
+        toast('Coupon applied - you saved ' + money(appliedCoupon.discount));
+      })
+      .catch(function (err) {
+        toast((err && err.message) || 'Could not apply coupon', true);
+      })
+      .finally(function () {
+        if (couponApplyBtn) { couponApplyBtn.disabled = false; couponApplyBtn.textContent = 'Apply'; }
+      });
+  }
+
+  function loadProfile() {
+    if (!window.ghApiRequest) return Promise.resolve();
+    return window.ghApiRequest('/api/auth/me')
+      .then(function (data) {
+        var u = (data && data.user) || {};
+        if (nameInput && u.name) nameInput.value = u.name;
+        if (emailInput && u.email) emailInput.value = u.email;
+        if (phoneInput && u.phone) phoneInput.value = u.phone;
+        if (addressInput && u.address) addressInput.value = u.address;
+      })
+      .catch(function (err) {
+        console.error('Failed to load profile:', err);
+      });
+  }
+
+  function bindPaymentOptions() {
+    var options = document.querySelectorAll('.gh-pay-option');
+    Array.prototype.forEach.call(options, function (opt) {
+      opt.addEventListener('click', function () {
+        var radio = opt.querySelector('input[type="radio"]');
+        if (!radio) return;
+        radio.checked = true;
+        Array.prototype.forEach.call(options, function (o) {
+          o.classList.toggle('gh-active', o === opt);
+        });
+      });
+    });
+  }
+
+  function validateForm() {
+    var name = nameInput ? nameInput.value.trim() : '';
+    var email = emailInput ? emailInput.value.trim() : '';
+    var phone = phoneInput ? phoneInput.value.trim() : '';
+    var address = addressInput ? addressInput.value.trim() : '';
+
+    if (!name) { toast('Please enter your full name', true); return null; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('Please enter a valid email address', true); return null; }
+    if (!/^[0-9]{10}$/.test(phone)) { toast('Please enter a valid 10-digit phone number', true); return null; }
+    if (!address) { toast('Please enter your delivery address', true); return null; }
+
+    return {
+      name: name,
+      email: email,
+      phone: phone,
+      address: address +
+        (cityInput && cityInput.value.trim() ? ', ' + cityInput.value.trim() : '') +
+        (pincodeInput && pincodeInput.value.trim() ? ' - ' + pincodeInput.value.trim() : ''),
+    };
+  }
+
+  function getPaymentMethod() {
+    var checked = document.querySelector('.gh-pay-option input[type="radio"]:checked');
+    return checked ? (checked.value || 'Cash on Delivery') : 'Cash on Delivery';
+  }
+
+  function setPlaceBusy(on) {
+    if (!placeBtn || !placeText) return;
+    placeBtn.disabled = on;
+    placeText.innerHTML = on
+      ? '<span class="gh-btn-spinner" aria-hidden="true"></span>Placing Order...'
+      : 'Place Order';
+  }
+
+  function clearCart() {
+    var tasks = currentItems
+      .filter(function (entry) { return entry._id; })
+      .map(function (entry) {
+        return window.ghApiRequest('/api/cart/' + encodeURIComponent(entry._id), { method: 'DELETE' })
+          .catch(function (err) { console.error('Failed to clear cart item:', err); });
+      });
+    return Promise.all(tasks);
+  }
+
+  function placeOrder() {
+    if (!currentItems.length) {
+      toast('Your cart is empty', true);
+      return;
+    }
+    var form = validateForm();
+    if (!form) return;
+
+    var subtotal = subtotalOf();
+    var delivery = deliveryFor(subtotal);
+    var tax = Math.round(subtotal * GST_RATE);
+    var discount = appliedCoupon ? appliedCoupon.discount : 0;
+    var total = subtotal + delivery + tax - discount;
+
+    var products = currentItems
+      .filter(function (entry) { return entry.product && entry.product._id; })
+      .map(function (entry) {
+        var product = entry.product;
+        return {
+          productId: product._id,
+          name: product.name || 'Product',
+          image: (product.images && product.images[0]) || product.image || '',
+          price: itemPrice(product),
+          quantity: parseInt(entry.quantity, 10) || 1,
+        };
+      });
+
+    if (!products.length) {
+      toast('Your cart items are no longer available', true);
+      return;
+    }
+
+    setPlaceBusy(true);
+
+    window.ghApiRequest('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: form.name,
+        customerEmail: form.email,
+        customerPhone: form.phone,
+        customerAddress: form.address,
+        products: products,
+        subtotal: subtotal,
+        deliveryCharge: delivery,
+        tax: tax,
+        discount: discount,
+        couponCode: appliedCoupon ? appliedCoupon.code : '',
+        total: total,
+        paymentMethod: getPaymentMethod(),
+      }),
+    })
+      .then(function (data) {
+        var order = (data && data.order) || {};
+        return clearCart().then(function () {
+          toast('Order placed successfully');
+          refreshBadge();
+          setTimeout(function () {
+            window.location.href = 'order-success.html?id=' + encodeURIComponent(order._id || '');
+          }, 1200);
+        });
+      })
+      .catch(function (err) {
+        toast((err && err.message) || 'Could not place your order. Please try again.', true);
+        setPlaceBusy(false);
+      });
+  }
+
+  function init() {
+    if (!window.ghIsLoggedIn || !window.ghIsLoggedIn()) {
       showGate();
       return;
     }
 
-    await ghSyncGuestCartToServer();
-    await loadProfile();
-
-    try {
-      const data = await ghApiRequest("/api/cart");
-      currentItems = data.cart || [];
-    } catch (error) {
-      console.error("Failed to load cart for checkout:", error);
-      currentItems = [];
-      if (typeof showToast === "function") {
-        showToast(error.message || "Could not load your cart.");
-      }
+    var boot = Promise.resolve();
+    if (window.ghSyncGuestCartToServer) {
+      boot = Promise.resolve(window.ghSyncGuestCartToServer()).catch(function () {});
     }
-
-    if (currentItems.length === 0) {
-      showEmpty();
-      if (proceedBtn) proceedBtn.style.display = "none";
-      if (paymentSection) paymentSection.style.display = "none";
-      return;
-    }
-
-    renderSummary(currentItems);
-  }
-
-  if (proceedBtn && paymentSection) {
-    proceedBtn.addEventListener("click", function () {
-      paymentSection.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (typeof showToast === "function") {
-        showToast("Review your details and select a payment method");
-      }
-    });
-  }
-
-  // Place Order
-  if (paymentForm) {
-    paymentForm.addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      if (!ghIsLoggedIn()) {
-        if (typeof showToast === "function") {
-          showToast("Please log in to place your order.");
+    boot
+      .then(function () { return loadProfile(); })
+      .then(function () {
+        return window.ghApiRequest('/api/cart');
+      })
+      .then(function (data) {
+        currentItems = (data && data.cart) || [];
+        if (!currentItems.length) {
+          showEmpty();
+          return;
         }
-        return;
-      }
-
-      const methodInput = this.querySelector('input[type="radio"]:checked');
-      if (!methodInput) {
-        if (typeof showToast === "function") {
-          showToast("Please select a payment method");
-        }
-        return;
-      }
-
-      const paymentMethod =
-        methodInput.value ||
-        (methodInput.closest("label")
-          ? methodInput.closest("label").textContent.trim()
-          : "") ||
-        "Cash on Delivery";
-
-      const name = billingName ? billingName.value.trim() : "";
-      const email = billingEmail ? billingEmail.value.trim() : "";
-      const phone = billingPhone ? billingPhone.value.trim() : "";
-      const address = billingAddress ? billingAddress.value.trim() : "";
-
-      if (!name || !email || !phone || !address) {
-        if (typeof showToast === "function") {
-          showToast("Please fill in your billing details");
-        }
-        return;
-      }
-
-      if (currentItems.length === 0) {
-        if (typeof showToast === "function") {
-          showToast("Your cart is empty");
-        }
-        return;
-      }
-
-      let subtotal = 0;
-      const products = [];
-      currentItems.forEach((entry) => {
-        const product = entry.product || {};
-        if (!product._id) return;
-        const price =
-          Number(product.discountPrice) || Number(product.price) || 0;
-        const qty = parseInt(entry.quantity, 10) || 1;
-        subtotal += price * qty;
-        products.push({
-          productId: product._id,
-          name: product.name || "Product",
-          image: (product.images && product.images[0]) || product.image || "",
-          price,
-          quantity: qty,
-        });
+        if (gateEl) gateEl.style.display = 'none';
+        if (rootEl) rootEl.style.display = 'grid';
+        if (emptyEl) emptyEl.style.display = 'none';
+        bindPaymentOptions();
+        renderAll();
+      })
+      .catch(function (err) {
+        console.error('Failed to load cart for checkout:', err);
+        toast((err && err.message) || 'Could not load your cart', true);
+        showEmpty();
       });
+  }
 
-      if (products.length === 0) {
-        if (typeof showToast === "function") {
-          showToast("Your cart items are no longer available");
-        }
-        return;
-      }
-
-      const total = subtotal + DELIVERY_CHARGE;
-      const user = ghGetUser() || {};
-
-      const submitBtn = this.querySelector('button[type="submit"]');
-      const originalText = submitBtn ? submitBtn.innerText : "";
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerText = "Placing Order...";
-      }
-
-      try {
-        await ghApiRequest("/api/orders", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customerId: user._id || "",
-            customerName: name,
-            customerEmail: email,
-            customerPhone: phone,
-            customerAddress: address,
-            products,
-            subtotal,
-            deliveryCharge: DELIVERY_CHARGE,
-            total,
-            paymentMethod,
-          }),
-        });
-
-        // Clear the cart after a successful order
-        for (const entry of currentItems) {
-          if (entry._id) {
-            try {
-              await ghApiRequest("/api/cart/" + encodeURIComponent(entry._id), {
-                method: "DELETE",
-              });
-            } catch (error) {
-              console.error("Failed to clear cart item:", error);
-            }
-          }
-        }
-
-        if (typeof showToast === "function") {
-          showToast("Order Placed Successfully");
-        }
-        if (typeof ghRefreshCartBadge === "function") {
-          ghRefreshCartBadge();
-        }
-
-        setTimeout(() => {
-          window.location.href = "orders.html";
-        }, 1500);
-      } catch (error) {
-        console.error("Place order failed:", error);
-        if (typeof showToast === "function") {
-          showToast(error.message || "Could not place your order. Please try again.");
-        }
-        if (submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.innerText = originalText;
-        }
+  if (couponApplyBtn) couponApplyBtn.addEventListener('click', applyCoupon);
+  if (couponInput) {
+    couponInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyCoupon();
       }
     });
   }
+  if (placeBtn) placeBtn.addEventListener('click', placeOrder);
 
-  init();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();

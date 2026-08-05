@@ -84,6 +84,24 @@ const orderSchema = new mongoose.Schema(
       min: [0, "Delivery charge cannot be negative"],
     },
 
+    tax: {
+      type: Number,
+      default: 0,
+      min: [0, "Tax cannot be negative"],
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+      min: [0, "Discount cannot be negative"],
+    },
+
+    couponCode: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
     total: {
       type: Number,
       required: [true, "Total amount is required"],

@@ -3,298 +3,547 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Green Hub | Home</title>
+    <title>Green Hub | Premium Online Plant Nursery</title>
+    <meta name="description" content="Premium online plant nursery - healthy plants, fresh seeds and gardening essentials delivered to your doorstep.">
 
-    <link rel="stylesheet" href="../css/style.css">
-
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
+    <link rel="icon" type="image/svg+xml" href="../images/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/premium.css">
 </head>
 <body>
 
-    <!-- Announcement Ticker -->
-
-    <div class="gh-ticker">
-
+    <div class="gh-ticker" aria-hidden="true">
         <div class="gh-ticker-track">
-
-            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Get 25% Flat Discount on Seeds</span>
-
+            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Flat 25% Off on Seeds</span>
             <span><i class="fa-solid fa-truck-fast"></i> Free Delivery on Orders Above ₹499</span>
-
-            <span><i class="fa-solid fa-tag"></i> Use Code: GREEN25 at Checkout</span>
-
-            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Get 25% Flat Discount on Seeds</span>
-
+            <span><i class="fa-solid fa-tag"></i> Use Code GREEN25 at Checkout</span>
+            <span><i class="fa-solid fa-seedling"></i> Monsoon Sale Live – Flat 25% Off on Seeds</span>
             <span><i class="fa-solid fa-truck-fast"></i> Free Delivery on Orders Above ₹499</span>
-
-            <span><i class="fa-solid fa-tag"></i> Use Code: GREEN25 at Checkout</span>
-
+            <span><i class="fa-solid fa-tag"></i> Use Code GREEN25 at Checkout</span>
         </div>
-
     </div>
 
-    <!-- Header -->
+    <header class="gh-header">
+        <div class="gh-container gh-header-inner">
+            <a href="index.html" class="gh-logo" aria-label="Green Hub Home">
+                <img src="../images/logo.svg" alt="Green Hub" width="80" height="48">
+            </a>
 
-    <header>
+            <nav class="gh-nav" aria-label="Main navigation">
+                <div class="gh-nav-item">
+                    <a href="index.html" class="gh-nav-link gh-active">Home</a>
+                </div>
+                <div class="gh-nav-item">
+                    <a href="products.html" class="gh-nav-link">All Products</a>
+                </div>
+                <div class="gh-nav-item">
+                    <a href="products.html" class="gh-nav-link">Plants <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="products.html?sort=popular">Best Sellers</a>
+                                <a href="products.html?sort=discount">Today's Deals</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="gh-nav-item gh-nav-hide-lg gh-hide-1">
+                    <a href="products.html" class="gh-nav-link">Pot Plants <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="products.html?sort=popular">Best Sellers</a>
+                                <a href="products.html?sort=discount">Today's Deals</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="gh-nav-item gh-nav-hide-lg gh-hide-1">
+                    <a href="products.html" class="gh-nav-link">Bulbs &amp; Seeds <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="products.html?sort=popular">Best Sellers</a>
+                                <a href="products.html?sort=discount">Today's Deals</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="gh-nav-item gh-nav-hide-lg gh-hide-2">
+                    <a href="products.html" class="gh-nav-link">Planters <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="products.html?sort=popular">Best Sellers</a>
+                                <a href="products.html?sort=discount">Today's Deals</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="gh-nav-item gh-nav-hide-lg gh-hide-2">
+                    <a href="products.html" class="gh-nav-link">Gardening Kit <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="products.html?sort=popular">Best Sellers</a>
+                                <a href="products.html?sort=discount">Today's Deals</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="gh-nav-item">
+                    <a href="products.html?sort=discount" class="gh-nav-link">Offers <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="products.html?sort=popular">Best Sellers</a>
+                                <a href="products.html?sort=discount">Today's Deals</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="gh-nav-item">
+                    <a href="#" class="gh-nav-link">More <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="gh-mega">
+                        <div class="gh-mega-cols">
+                            <div>
+                                <h4>Shop by Category</h4>
+                                <div class="gh-mega-cat-grid" data-mega-cats></div>
+                            </div>
+                            <div class="gh-mega-quick">
+                                <h4>Quick Links</h4>
+                                <a href="products.html">All Products</a>
+                                <a href="product-details.html">Product Details</a>
+                                <a href="wishlist.html">My Wishlist</a>
+                                <a href="cart.html">My Cart</a>
+                                <a href="orders.html">My Orders</a>
+                                <a href="profile.html">My Profile</a>
+                                <a href="about.html">About Us</a>
+                                <a href="contact.html">Contact Us</a>
+                            </div>
+                        </div>
+                        <a class="gh-mega-banner" href="products.html?sort=discount">
+                            <small>Limited Time</small>
+                            <strong>Flat 25% OFF</strong>
+                            <span>Use code GREEN25 at checkout</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
 
-        <div class="logo">
-            <i class="fa-solid fa-seedling"></i>
-            <h2>Green Hub</h2>
+            <div class="gh-header-actions">
+                <button type="button" class="gh-icon-btn gh-theme-toggle" aria-label="Toggle dark mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <button type="button" class="gh-icon-btn" data-gh-open-search aria-label="Search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button type="button" class="gh-icon-btn" data-gh-account aria-label="Account">
+                    <i class="fa-regular fa-user"></i>
+                </button>
+                <button type="button" class="gh-icon-btn" data-gh-wishlist-link aria-label="Wishlist">
+                    <i class="fa-regular fa-heart"></i>
+                </button>
+                <button type="button" class="gh-icon-btn" data-gh-open-cart aria-label="Cart">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span class="gh-cart-badge">0</span>
+                </button>
+                <button type="button" class="gh-hamburger" aria-label="Open menu">
+                    <span></span><span></span><span></span>
+                </button>
+            </div>
         </div>
-
-        <nav>
-
-            <a href="index.html">Home</a>
-
-            <a href="products.html">Products</a>
-
-            <a href="about.html">About</a>
-
-            <a href="contact.html">Contact</a>
-
-            <a href="login.html">Login</a>
-
-        </nav>
-
-        <div class="icons">
-
-            <i class="fa-solid fa-magnifying-glass"></i>
-
-            <i class="fa-solid fa-heart"></i>
-
-            <i class="fa-solid fa-cart-shopping"></i>
-
-            <i class="fa-solid fa-user"></i>
-
-        </div>
-
-        <button class="hamburger" type="button" aria-label="Menu">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
     </header>
 
-    <!-- Hero Slideshow -->
+    <div class="gh-backdrop" aria-hidden="true"></div>
 
-    <section class="gh-hero" id="gh-hero">
-
-        <div class="gh-slides" id="gh-slides"></div>
-
-        <button class="gh-hero-arrow prev" type="button" aria-label="Previous slide">
-            <i class="fa-solid fa-chevron-left"></i>
-        </button>
-
-        <button class="gh-hero-arrow next" type="button" aria-label="Next slide">
-            <i class="fa-solid fa-chevron-right"></i>
-        </button>
-
-        <div class="gh-hero-dots" id="gh-hero-dots"></div>
-
-    </section>
-
-    <!-- Shop by Category -->
-
-    <section class="categories">
-
-        <h2>Shop by Category</h2>
-
-        <div class="gh-carousel">
-
-            <button class="gh-carrow prev" type="button" aria-label="Previous categories">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-
-            <div class="category-container" id="shop-categories"></div>
-
-            <button class="gh-carrow next" type="button" aria-label="Next categories">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-
+    <aside class="gh-drawer" aria-label="Mobile menu">
+        <div class="gh-drawer-head">
+            <a href="index.html"><img src="../images/logo.svg" alt="Green Hub"></a>
+            <button type="button" class="gh-drawer-close" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button>
         </div>
-
-    </section>
-
-    <!-- Products by Category -->
-
-    <div id="category-products"></div>
-
-    <!-- Why Choose Us -->
-
-    <section class="why">
-
-        <h2>Why Choose Green Hub?</h2>
-
-        <div class="why-container">
-
-            <div>
-                <i class="fa-solid fa-leaf"></i>
-                <h3>Fresh Plants</h3>
-                <p>Healthy plants delivered directly from nurseries.</p>
+        <div class="gh-drawer-body">
+            <div class="gh-drawer-item"><a class="gh-drawer-link" href="index.html">Home</a></div>
+            <div class="gh-drawer-item"><a class="gh-drawer-link" href="products.html">All Products</a></div>
+            <div class="gh-drawer-item">
+                <button type="button" class="gh-drawer-link" data-sub="gh-sub-plants">Plants <i class="fa-solid fa-chevron-down"></i></button>
+                <div class="gh-drawer-sub" id="gh-sub-plants" data-mega-cats></div>
             </div>
-
-            <div>
-                <i class="fa-solid fa-medal"></i>
-                <h3>Premium Quality</h3>
-                <p>Hand-picked plants and verified seeds.</p>
+            <div class="gh-drawer-item">
+                <button type="button" class="gh-drawer-link" data-sub="gh-sub-pot">Pot Plants <i class="fa-solid fa-chevron-down"></i></button>
+                <div class="gh-drawer-sub" id="gh-sub-pot" data-mega-cats></div>
             </div>
-
-            <div>
-                <i class="fa-solid fa-truck-fast"></i>
-                <h3>Fast Delivery</h3>
-                <p>Quick delivery across India.</p>
+            <div class="gh-drawer-item">
+                <button type="button" class="gh-drawer-link" data-sub="gh-sub-bulbs">Bulbs &amp; Seeds <i class="fa-solid fa-chevron-down"></i></button>
+                <div class="gh-drawer-sub" id="gh-sub-bulbs" data-mega-cats></div>
             </div>
-
-            <div>
-                <i class="fa-solid fa-headset"></i>
-                <h3>24/7 Support</h3>
-                <p>Always here to help our customers.</p>
+            <div class="gh-drawer-item">
+                <button type="button" class="gh-drawer-link" data-sub="gh-sub-planters">Planters <i class="fa-solid fa-chevron-down"></i></button>
+                <div class="gh-drawer-sub" id="gh-sub-planters" data-mega-cats></div>
             </div>
-
-        </div>
-
-    </section>
-
-    <!-- Customer Reviews -->
-
-    <section class="reviews">
-
-        <h2>Customers Are Saying</h2>
-
-        <div class="review-container">
-
-            <div class="review">
-
-                <div class="stars">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
+            <div class="gh-drawer-item">
+                <button type="button" class="gh-drawer-link" data-sub="gh-sub-kit">Gardening Kit <i class="fa-solid fa-chevron-down"></i></button>
+                <div class="gh-drawer-sub" id="gh-sub-kit" data-mega-cats></div>
+            </div>
+            <div class="gh-drawer-item">
+                <button type="button" class="gh-drawer-link" data-sub="gh-sub-more">More <i class="fa-solid fa-chevron-down"></i></button>
+                <div class="gh-drawer-sub" id="gh-sub-more">
+                    <a href="products.html?sort=discount">Today's Deals</a>
+                    <a href="wishlist.html">My Wishlist</a>
+                    <a href="cart.html">My Cart</a>
+                    <a href="orders.html">My Orders</a>
+                    <a href="profile.html">My Profile</a>
+                    <a href="about.html">About Us</a>
+                    <a href="contact.html">Contact Us</a>
                 </div>
-
-                <p>Amazing quality plants. Delivery was very fast.</p>
-
-                <h3>Rahul</h3>
-
             </div>
+        </div>
+        <div class="gh-drawer-foot">
+            <a href="login.html" class="gh-btn gh-btn--sm">Sign In</a>
+            <a href="products.html" class="gh-btn gh-btn--sm gh-btn--outline">Shop Now</a>
+        </div>
+    </aside>
 
-            <div class="review">
+    <main>
 
-                <div class="stars">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                </div>
-
-                <p>Beautiful indoor plants with affordable prices.</p>
-
-                <h3>Priya</h3>
-
+        <div class="gh-page-banner gh-page-banner--compact">
+            <div class="gh-container">
+                <nav class="gh-breadcrumb" aria-label="Breadcrumb">
+                    <span>Home</span>
+                </nav>
             </div>
-
-            <div class="review">
-
-                <div class="stars">
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-solid fa-star"></i>
-                    <i class="fa-regular fa-star"></i>
-                </div>
-
-                <p>Highly recommend Green Hub.</p>
-
-                <h3>Arjun</h3>
-
-            </div>
-
         </div>
 
-    </section>
-
-    <!-- Footer -->
-
-    <footer>
-
-        <div class="footer-grid">
-
-            <div class="footer-brand">
-
-                <h2><i class="fa-solid fa-seedling"></i> Green Hub</h2>
-
-                <p>Your trusted online nursery for healthy plants, flowers and gardening accessories. Your dream garden is just a click away.</p>
-
-                <div class="footer-social">
-
-                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-
-                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
-
-                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
-
-                    <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-
+        <div class="gh-container">
+            <section class="gh-features" aria-label="Our services">
+                <div class="gh-feature">
+                    <div class="gh-feature-icon"><i class="fa-solid fa-leaf"></i></div>
+                    <div><h3>Premium Quality</h3><p>Hand-picked from trusted nurseries</p></div>
                 </div>
-
-            </div>
-
-            <div class="footer-links">
-
-                <h3>Quick Links</h3>
-
-                <a href="index.html">Home</a>
-
-                <a href="products.html">Products</a>
-
-                <a href="about.html">About</a>
-
-                <a href="contact.html">Contact</a>
-
-                <a href="login.html">Login</a>
-
-            </div>
-
-            <div class="footer-contact">
-
-                <h3>Get In Touch</h3>
-
-                <p><i class="fa-solid fa-location-dot"></i> 24, Green Street, Chennai, Tamil Nadu</p>
-
-                <p><i class="fa-solid fa-envelope"></i> support@greenhub.com</p>
-
-                <p><i class="fa-solid fa-phone"></i> +91 9876543210</p>
-
-            </div>
-
-            <div class="newsletter">
-
-                <h3>Our Newsletter</h3>
-
-                <p>Subscribe to get news about special discounts.</p>
-
-                <input type="email" placeholder="Enter your email">
-
-                <button type="button">Subscribe</button>
-
-            </div>
-
+                <div class="gh-feature">
+                    <div class="gh-feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                    <div><h3>Fast Delivery</h3><p>Safely packed, delivered quickly</p></div>
+                </div>
+                <div class="gh-feature">
+                    <div class="gh-feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div><h3>Secure Payment</h3><p>100% safe &amp; protected payments</p></div>
+                </div>
+                <div class="gh-feature">
+                    <div class="gh-feature-icon"><i class="fa-solid fa-headset"></i></div>
+                    <div><h3>24x7 Support</h3><p>We are always here to help</p></div>
+                </div>
+            </section>
         </div>
 
-        <div class="footer-bottom">
+        <section class="gh-section gh-section--compact" aria-label="Shop by category">
+            <div class="gh-container">
+                <div class="gh-section-head" data-gh-reveal>
+                    <div>
+                        <span class="gh-kicker">Browse Collections</span>
+                        <h2>Shop by Category</h2>
+                        <p>Find exactly what your garden needs from our curated categories.</p>
+                    </div>
+                    <a href="products.html" class="gh-link-all">View All <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="gh-cats-row" data-cats data-gh-reveal></div>
+            </div>
+        </section>
 
-            <p>© 2026 Green Hub. All Rights Reserved.</p>
+        <section class="gh-section gh-section--soft" aria-label="Popular plants">
+            <div class="gh-container">
+                <div class="gh-section-head" data-gh-reveal>
+                    <div>
+                        <span class="gh-kicker">Best Sellers</span>
+                        <h2>Popular Plants</h2>
+                        <p>Loved by thousands of gardeners across the country.</p>
+                    </div>
+                    <a href="products.html" class="gh-link-all">View All <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="gh-grid" data-popular-grid data-gh-reveal></div>
+            </div>
+        </section>
 
+        <section class="gh-section" data-offers aria-label="Today's offers">
+            <div class="gh-container">
+                <div class="gh-section-head" data-gh-reveal>
+                    <div>
+                        <span class="gh-kicker">Deals of the Day</span>
+                        <h2>Today's Offers</h2>
+                        <p>Grab big savings before the timer runs out.</p>
+                    </div>
+                    <div class="gh-timer" data-timer aria-label="Offer countdown"></div>
+                </div>
+                <div class="gh-offers-grid" data-offers-grid data-gh-reveal></div>
+            </div>
+        </section>
+
+        <section class="gh-section gh-section--soft" data-recent-section style="display:none" aria-label="Recently viewed">
+            <div class="gh-container">
+                <div class="gh-section-head" data-gh-reveal>
+                    <div>
+                        <span class="gh-kicker">Pick Up Where You Left Off</span>
+                        <h2>Recently Viewed</h2>
+                        <p>Products you explored recently.</p>
+                    </div>
+                </div>
+                <div class="gh-recent-row" data-recent-grid data-gh-reveal></div>
+            </div>
+        </section>
+
+        <section class="gh-section" aria-label="Customer reviews">
+            <div class="gh-container">
+                <div class="gh-section-head" data-gh-reveal>
+                    <div>
+                        <span class="gh-kicker">Testimonials</span>
+                        <h2>Customers Are Saying</h2>
+                        <p>Real reviews from real gardeners.</p>
+                    </div>
+                </div>
+                <div class="gh-testi-grid">
+                    <div class="gh-testi" data-gh-reveal>
+                        <span class="gh-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                        <p>The plants arrived fresh and beautifully packed. My money plant has already doubled in size in just three weeks!</p>
+                        <div class="gh-testi-author">
+                            <span class="gh-testi-avatar">RS</span>
+                            <div><b>Rahul Sharma</b><span>Chennai</span></div>
+                        </div>
+                    </div>
+                    <div class="gh-testi" data-gh-reveal>
+                        <span class="gh-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+                        <p>Ordered vegetable seeds for my terrace garden. Germination rate was excellent and delivery was super fast.</p>
+                        <div class="gh-testi-author">
+                            <span class="gh-testi-avatar">PK</span>
+                            <div><b>Priya Krishnan</b><span>Bengaluru</span></div>
+                        </div>
+                    </div>
+                    <div class="gh-testi" data-gh-reveal>
+                        <span class="gh-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></span>
+                        <p>Great collection of indoor plants at honest prices. Customer support helped me pick the perfect plant for low light.</p>
+                        <div class="gh-testi-author">
+                            <span class="gh-testi-avatar">AM</span>
+                            <div><b>Arjun Menon</b><span>Kochi</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="gh-section" aria-label="Newsletter">
+            <div class="gh-container">
+                <div class="gh-newsletter-band" data-gh-reveal>
+                    <div>
+                        <h2>Get 10% Off Your First Order</h2>
+                        <p>Join the Green Hub family for exclusive deals, seasonal plant guides and gardening tips. No spam, just green goodness.</p>
+                    </div>
+                    <form class="gh-newsletter-form" data-gh-newsletter>
+                        <input type="email" placeholder="Enter your email address" aria-label="Email address" required>
+                        <button type="submit" class="gh-btn">Subscribe <i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="gh-footer">
+        <div class="gh-container">
+            <div class="gh-footer-grid">
+                <div class="gh-footer-brand">
+                    <img src="../images/logo.svg" alt="Green Hub">
+                    <p>Your trusted online nursery for healthy plants, fresh seeds and premium gardening essentials. Your dream garden is just a click away.</p>
+                    <div class="gh-footer-social">
+                        <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                        <a href="#" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="gh-footer-links">
+                    <h3>Quick Links</h3>
+                    <a href="index.html">Home</a>
+                    <a href="products.html">All Products</a>
+                    <a href="products.html?sort=discount">Today's Offers</a>
+                    <a href="wishlist.html">Wishlist</a>
+                    <a href="orders.html">My Orders</a>
+                </div>
+                <div class="gh-footer-links">
+                    <h3>Customer Service</h3>
+                    <a href="about.html">About Us</a>
+                    <a href="contact.html">Contact Us</a>
+                    <a href="login.html">Login / Register</a>
+                    <a href="profile.html">My Account</a>
+                    <a href="cart.html">My Cart</a>
+                </div>
+                <div class="gh-footer-news">
+                    <h3>Our Newsletter</h3>
+                    <p>Subscribe to get news about special discounts and new arrivals.</p>
+                    <form data-gh-newsletter>
+                        <input type="email" placeholder="Enter your email" aria-label="Email address" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                    <div class="gh-footer-social" style="margin-top:18px">
+                        <a href="https://wa.me/919876543210" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="tel:+919876543210" aria-label="Call us"><i class="fa-solid fa-phone"></i></a>
+                        <a href="mailto:support@greenhub.com" aria-label="Email us"><i class="fa-solid fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="gh-footer-bottom">
+                <p>© <span data-year>2026</span> Green Hub. All Rights Reserved.</p>
+                <div class="gh-footer-payments">
+                    <span>We accept</span>
+                    <i class="fa-brands fa-cc-visa"></i>
+                    <i class="fa-brands fa-cc-mastercard"></i>
+                    <i class="fa-brands fa-cc-amex"></i>
+                    <i class="fa-brands fa-cc-paypal"></i>
+                    <i class="fa-brands fa-google-pay"></i>
+                </div>
+            </div>
         </div>
-
     </footer>
 
-<script src="../js/cart.js?v=2"></script>
-<script src="../js/script.js?v=4"></script>
-<script src="../js/products.js?v=2"></script>
-<script src="../js/home.js?v=2"></script>
+    <div class="gh-search-overlay" role="dialog" aria-label="Search">
+        <div class="gh-search-panel">
+            <div class="gh-search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Search plants, seeds, planters..." aria-label="Search products" autocomplete="off">
+                <button type="button" class="gh-search-clear" aria-label="Clear"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="gh-search-suggest">
+                <div data-search-results></div>
+            </div>
+            <div style="margin-top:22px;display:grid;gap:18px">
+                <div>
+                    <h5 style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gh-grey);margin-bottom:12px">Recent Searches</h5>
+                    <div class="gh-search-tags" data-recent-searches></div>
+                </div>
+                <div>
+                    <h5 style="font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--gh-grey);margin-bottom:12px">Popular Categories</h5>
+                    <div class="gh-search-tags" data-pop-cats></div>
+                </div>
+            </div>
+            <button type="button" class="gh-search-close"><i class="fa-solid fa-arrow-left"></i> Press Esc to close</button>
+        </div>
+    </div>
+
+    <div class="gh-modal" role="dialog" aria-label="Quick view" aria-modal="true">
+        <div class="gh-modal-card"></div>
+    </div>
+
+    <aside class="gh-drawer-cart" aria-label="Shopping cart">
+        <div class="gh-drawer-cart-head">
+            <h3>Your Cart <span>(0)</span></h3>
+            <button type="button" class="gh-modal-close" data-gh-cart-close aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="gh-drawer-cart-body"></div>
+        <div class="gh-drawer-cart-foot">
+            <div class="gh-cart-total"><span>Subtotal</span><b>₹0</b></div>
+            <div class="gh-cart-cta">
+                <a href="cart.html" class="gh-btn gh-btn--outline">View Cart</a>
+                <button type="button" class="gh-btn" data-gh-checkout>Checkout</button>
+            </div>
+        </div>
+    </aside>
+
+    <div class="gh-news-pop" aria-label="Newsletter offer">
+        <button type="button" class="gh-news-pop-close" aria-label="Dismiss"><i class="fa-solid fa-xmark"></i></button>
+        <div class="gh-news-pop-top">
+            <i class="fa-solid fa-gift"></i>
+            <h4>Get 10% Off!</h4>
+            <p>Subscribe and enjoy exclusive discounts on your first order.</p>
+        </div>
+        <form class="gh-news-pop-body">
+            <input type="email" placeholder="Enter your email address" aria-label="Email address" required>
+            <button type="submit" class="gh-btn">Claim My Discount</button>
+        </form>
+    </div>
+
+    <button type="button" class="gh-backtop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+    <a class="gh-whatsapp" href="https://wa.me/919876543210?text=Hi%20Green%20Hub!%20I%20have%20a%20question%20about%20your%20plants." target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        window.GH_API_BASE = 'http://localhost:5000';
+    </script>
+    <script src="../js/cart.js?v=2"></script>
+    <script src="../js/premium.js?v=1"></script>
 </body>
 </html>
