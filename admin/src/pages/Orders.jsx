@@ -7,7 +7,9 @@ import "./Orders.css";
 
 const PAGE_SIZE = 10;
 
-const ORDER_STATUSES = ["pending", "shipped", "delivered", "cancelled"];
+const ORDER_STATUSES = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
+
+const money = (n) => `Rs.${Number(n || 0).toLocaleString("en-IN")}`;
 
 const formatDate = (iso) => {
   if (!iso) return "--";
@@ -21,8 +23,8 @@ const formatDate = (iso) => {
 const shortId = (id) => (id ? `#${id.slice(-8).toUpperCase()}` : "--");
 
 function StatusBadge({ value, type }) {
-  const label = value || "pending";
-  return <span className={`badge badge-${type}-${label}`}>{label}</span>;
+  const label = value || "Pending";
+  return <span className={`badge badge-${type}-${label.toLowerCase()}`}>{label}</span>;
 }
 
 export default function Orders() {
@@ -73,7 +75,7 @@ export default function Orders() {
   }, [load]);
 
   const openDetails = (order) => {
-    setStatusDraft(order.orderStatus);
+    setStatusDraft(order.status);
     setSelected(order);
     setDetailOpen(true);
   };
@@ -85,7 +87,7 @@ export default function Orders() {
   };
 
   const handleStatusUpdate = async () => {
-    if (!selected || !statusDraft || statusDraft === selected.orderStatus) return;
+    if (!selected || !statusDraft || statusDraft === selected.status) return;
     setUpdating(true);
     try {
       await updateOrderStatus(selected._id, statusDraft);
@@ -155,7 +157,7 @@ export default function Orders() {
           <option value="">All statuses</option>
           {ORDER_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
+              {s}
             </option>
           ))}
         </select>
@@ -197,33 +199,67 @@ export default function Orders() {
               <thead>
                 <tr>
                   <th>Order ID</th>
-                  <th>Customer</th>
+                  <th>Customer Name</th>
+                  <th>Phone</th>
+                  <th>Products</th>
+                  <th>Qty</th>
                   <th>Total</th>
-                  <th>Payment</th>
+                  <th>Payment Method</th>
                   <th>Status</th>
-                  <th>Date</th>
+                  <th>Order Date</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((o) => (
-                  <tr key={o._id} className="order-row" onClick={() => openDetails(o)}>
-                    <td>{shortId(o._id)}</td>
-                    <td>
-                      {o.user?.name || (
-                        <span className="muted">Unknown customer</span>
-                      )}
-                      <div className="cell-sub muted">{o.user?.email}</div>
-                    </td>
-                    <td>Rs.{o.totalAmount}</td>
-                    <td>
-                      <StatusBadge value={o.paymentStatus} type="payment" />
-                    </td>
-                    <td>
-                      <StatusBadge value={o.orderStatus} type="order" />
-                    </td>
-                    <td>{formatDate(o.createdAt)}</td>
-                  </tr>
-                ))}
+                {orders.map((o) => {
+                  const products = o.products || [];
+                  const totalQty = products.reduce(
+                    (s, p) => s + (parseInt(p.quantity, 10) || 0),
+                    0
+                  );
+                  const first = products[0];
+                  return (
+                    <tr key={o._id} className="order-row" onClick={() => openDetails(o)}>
+                      <td>{shortId(o._id)}</td>
+                      <td>
+                        {o.customerName || (
+                          <span className="muted">Unknown customer</span>
+                        )}
+                        <div className="cell-sub muted">{o.customerEmail}</div>
+                      </td>
+                      <td>{o.customerPhone || "--"}</td>
+                      <td>
+                        {first ? (
+                          <div className="product-cell">
+                            {first.image ? (
+                              <img
+                                className="thumb thumb-sm"
+                                src={assetUrl(first.image)}
+                                alt={first.name || "Product"}
+                              />
+                            ) : (
+                              <div className="thumb thumb-sm thumb-empty"></div>
+                            )}
+                            <span className="product-name">
+                              {first.name || "Product"}
+                              {products.length > 1
+                                ? ` +${products.length - 1} more`
+                                : ""}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="muted">No items</span>
+                        )}
+                      </td>
+                      <td>{totalQty}</td>
+                      <td>{money(o.total)}</td>
+                      <td>{o.paymentMethod || "--"}</td>
+                      <td>
+                        <StatusBadge value={o.status} type="order" />
+                      </td>
+                      <td>{formatDate(o.createdAt)}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -263,34 +299,29 @@ export default function Orders() {
         open={detailOpen}
         title={`Order ${selected ? shortId(selected._id) : ""}`}
         onClose={closeDetails}
-        width="640px"
+        width="680px"
       >
         {selected && (
           <div className="order-details">
             <section className="detail-grid">
               <div>
-                <h4 className="section-title">Customer</h4>
+                <h4 className="section-title">Customer Details</h4>
                 <p>
-                  <strong>{selected.user?.name || "--"}</strong>
+                  <strong>{selected.customerName || "--"}</strong>
                 </p>
-                <p className="muted">{selected.user?.email}</p>
-                <p className="muted">{selected.user?.phone || "No phone"}</p>
+                <p className="muted">{selected.customerEmail}</p>
+                <p className="muted">{selected.customerPhone || "No phone"}</p>
               </div>
               <div>
-                <h4 className="section-title">Shipping address</h4>
-                <p className="address-line">{selected.shippingAddress || "--"}</p>
+                <h4 className="section-title">Shipping Address</h4>
+                <p className="address-line">{selected.customerAddress || "--"}</p>
               </div>
             </section>
 
             <div className="detail-grid">
               <div>
-                <h4 className="section-title">Payment</h4>
-                <p>
-                  <StatusBadge value={selected.paymentStatus} type="payment" />{" "}
-                  <span className="muted">
-                    {selected.paymentId ? `• ${selected.paymentId}` : "No payment ID"}
-                  </span>
-                </p>
+                <h4 className="section-title">Payment Method</h4>
+                <p>{selected.paymentMethod || "--"}</p>
                 <p className="muted">Placed {formatDate(selected.createdAt)}</p>
               </div>
               <div>
@@ -303,7 +334,7 @@ export default function Orders() {
                   >
                     {ORDER_STATUSES.map((s) => (
                       <option key={s} value={s}>
-                        {s.charAt(0).toUpperCase() + s.slice(1)}
+                        {s}
                       </option>
                     ))}
                   </select>
@@ -312,7 +343,7 @@ export default function Orders() {
                     className="btn btn-primary btn-sm"
                     disabled={
                       !statusDraft ||
-                      statusDraft === selected.orderStatus ||
+                      statusDraft === selected.status ||
                       updating
                     }
                     onClick={handleStatusUpdate}
@@ -323,51 +354,77 @@ export default function Orders() {
               </div>
             </div>
 
-            <h4 className="section-title">Items</h4>
+            <h4 className="section-title">Products</h4>
             <div className="table-wrap">
               <table className="data-table items-table">
                 <thead>
                   <tr>
+                    <th>Image</th>
                     <th>Product</th>
-                    <th>Qty</th>
                     <th>Price</th>
+                    <th>Qty</th>
                     <th>Total</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {selected.items.map((item, idx) => {
-                    const product = item.product;
-                    return (
-                      <tr key={idx}>
-                        <td>
-                          <div className="product-cell">
-                            {product?.images?.[0] ? (
-                              <img
-                                className="thumb thumb-sm"
-                                src={assetUrl(product.images[0])}
-                                alt={product.name || "Product"}
-                              />
-                            ) : (
-                              <div className="thumb thumb-sm thumb-empty"></div>
-                            )}
-                            <span className="product-name">
-                              {product?.name || "Deleted product"}
-                            </span>
-                          </div>
-                        </td>
-                        <td>{item.quantity}</td>
-                        <td>Rs.{item.price}</td>
-                        <td>Rs.{item.quantity * item.price}</td>
-                      </tr>
-                    );
-                  })}
+                  {(selected.products || []).map((item, idx) => (
+                    <tr key={idx}>
+                      <td>
+                        {item.image ? (
+                          <img
+                            className="thumb thumb-sm"
+                            src={assetUrl(item.image)}
+                            alt={item.name || "Product"}
+                          />
+                        ) : (
+                          <div className="thumb thumb-sm thumb-empty"></div>
+                        )}
+                      </td>
+                      <td>{item.name || "Deleted product"}</td>
+                      <td>{money(item.price)}</td>
+                      <td>{item.quantity}</td>
+                      <td>
+                        {money((Number(item.price) || 0) * (Number(item.quantity) || 0))}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
 
             <div className="order-total">
-              <span>Total amount</span>
-              <strong>Rs.{selected.totalAmount}</strong>
+              <span>
+                Subtotal {money(selected.subtotal)} + Delivery{" "}
+                {money(selected.deliveryCharge)}
+              </span>
+              <strong>Grand Total {money(selected.total)}</strong>
+            </div>
+
+            <h4 className="section-title">Timeline</h4>
+            <div className="order-timeline">
+              <div className="timeline-item">
+                <span className="timeline-dot done"></span>
+                <div>
+                  <strong>Order placed</strong>
+                  <p className="muted">{formatDate(selected.createdAt)}</p>
+                </div>
+              </div>
+              <div className="timeline-item">
+                <span className="timeline-dot done"></span>
+                <div>
+                  <strong>Last updated</strong>
+                  <p className="muted">{formatDate(selected.updatedAt)}</p>
+                </div>
+              </div>
+              <div className="timeline-item">
+                <span className="timeline-dot active"></span>
+                <div>
+                  <strong>Current status</strong>
+                  <p>
+                    <StatusBadge value={selected.status} type="order" />
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}

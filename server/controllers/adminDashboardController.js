@@ -11,7 +11,7 @@ const toDayKey = (d) =>
 // Admin: dashboard summary
 const getSummary = async (req, res, next) => {
   try {
-    const activeOrderQuery = { orderStatus: { $ne: "cancelled" } };
+    const activeOrderQuery = { status: { $ne: "Cancelled" } };
 
     const days = Math.min(Math.max(parseInt(req.query.days, 10) || 30, 1), 365);
     const start = new Date();
@@ -22,19 +22,19 @@ const getSummary = async (req, res, next) => {
       await Promise.all([
         Order.aggregate([
           { $match: activeOrderQuery },
-          { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+          { $group: { _id: null, total: { $sum: "$total" } } },
         ]),
         Order.countDocuments(),
         Product.countDocuments({ stock: { $lte: LOW_STOCK_THRESHOLD } }),
         Order.aggregate([
           { $match: activeOrderQuery },
-          { $unwind: "$items" },
+          { $unwind: "$products" },
           {
             $group: {
-              _id: "$items.product",
-              totalQuantity: { $sum: "$items.quantity" },
+              _id: "$products.productId",
+              totalQuantity: { $sum: "$products.quantity" },
               totalSales: {
-                $sum: { $multiply: ["$items.quantity", "$items.price"] },
+                $sum: { $multiply: ["$products.quantity", "$products.price"] },
               },
             },
           },
@@ -62,7 +62,7 @@ const getSummary = async (req, res, next) => {
               _id: {
                 $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
               },
-              total: { $sum: "$totalAmount" },
+              total: { $sum: "$total" },
             },
           },
           { $sort: { _id: 1 } },

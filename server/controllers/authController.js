@@ -125,7 +125,90 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Get Current User Profile (protected)
+const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: sanitizeUser(user),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Update Current User Profile (protected)
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone, address } = req.body;
+
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (typeof name === "string" && name.trim() !== "") {
+      user.name = name.trim();
+    }
+
+    if (typeof email === "string" && email.trim() !== "") {
+      const normalizedEmail = email.trim().toLowerCase();
+      if (normalizedEmail !== user.email) {
+        const existing = await User.findOne({ email: normalizedEmail });
+        if (existing && String(existing._id) !== String(user._id)) {
+          return res.status(400).json({
+            success: false,
+            message: "A user with this email already exists",
+          });
+        }
+        user.email = normalizedEmail;
+      }
+    }
+
+    if (typeof phone === "string") user.phone = phone.trim();
+    if (typeof address === "string") user.address = address.trim();
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile Updated Successfully",
+      user: sanitizeUser(user),
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "A user with this email already exists",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
+  getProfile,
+  updateProfile,
 };

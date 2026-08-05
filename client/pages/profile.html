@@ -54,7 +54,7 @@
 
             <img src="../images/profile.png" alt="Profile Picture" width="150">
 
-            <h2>John Doe</h2>
+            <h2 id="profile-display-name">Customer</h2>
 
             <p>Customer</p>
 
@@ -68,19 +68,19 @@
 
                 <label>Full Name</label>
 
-                <input type="text" value="John Doe">
+                <input type="text" id="profile-name" value="">
 
                 <label>Email</label>
 
-                <input type="email" value="john@example.com">
+                <input type="email" id="profile-email" value="">
 
                 <label>Phone Number</label>
 
-                <input type="tel" value="+91 9876543210">
+                <input type="tel" id="profile-phone" value="">
 
                 <label>Delivery Address</label>
 
-                <textarea rows="4">123 Green Street, Chennai</textarea>
+                <textarea rows="4" id="profile-address"></textarea>
 
                 <button type="submit">Update Profile</button>
 
@@ -158,7 +158,8 @@
 
     </footer>
 
-<script src="../js/script.js"></script>
+<script src="../js/cart.js?v=2"></script>
+<script src="../js/script.js?v=5"></script>
 </body>
 
 </html>

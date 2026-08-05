@@ -40,7 +40,7 @@
 
         <h1>Your Shopping Cart</h1>
 
-        <table border="1" cellpadding="15">
+        <table border="1" cellpadding="15" id="cart-table">
 
             <tr>
 
@@ -53,67 +53,9 @@
 
             </tr>
 
-            <tr>
+            <tbody id="cart-table-body">
 
-                <td>Snake Plant</td>
-
-                <td>
-
-                    <img src="../images/plant1.jpg"
-                        width="100">
-
-                </td>
-
-                <td>₹399</td>
-
-                <td>
-
-                    <input type="number"
-                        value="1"
-                        min="1">
-
-                </td>
-
-                <td>₹399</td>
-
-                <td>
-
-                    <button>Remove</button>
-
-                </td>
-
-            </tr>
-
-            <tr>
-
-                <td>Money Plant</td>
-
-                <td>
-
-                    <img src="../images/plant2.jpg"
-                        width="100">
-
-                </td>
-
-                <td>₹299</td>
-
-                <td>
-
-                    <input type="number"
-                        value="2"
-                        min="1">
-
-                </td>
-
-                <td>₹598</td>
-
-                <td>
-
-                    <button>Remove</button>
-
-                </td>
-
-            </tr>
+            </tbody>
 
         </table>
 
@@ -121,29 +63,9 @@
 
     <!-- Order Summary -->
 
-    <section class="summary">
+    <section class="summary" id="cart-summary">
 
-        <h2>Order Summary</h2>
-
-        <p>Items : 3</p>
-
-        <p>Subtotal : ₹997</p>
-
-        <p>Delivery : ₹50</p>
-
-        <h3>Total : ₹1047</h3>
-
-        <br>
-
-        <a href="checkout.html">
-
-            <button>
-
-                Proceed to Checkout
-
-            </button>
-
-        </a>
+        <p>Loading your cart...</p>
 
     </section>
 
@@ -153,46 +75,9 @@
 
         <h2>You May Also Like</h2>
 
-        <div class="product-container">
+        <div class="product-container" id="cart-recommended">
 
-            <div class="product-card">
-
-                <img src="../images/plant3.jpg"
-                    width="180">
-
-                <h3>Peace Lily</h3>
-
-                <p>₹499</p>
-
-                <button>Add to Cart</button>
-
-            </div>
-
-            <div class="product-card">
-
-                <img src="../images/plant4.jpg"
-                    width="180">
-
-                <h3>Aloe Vera</h3>
-
-                <p>₹199</p>
-
-                <button>Add to Cart</button>
-
-            </div>
-
-            <div class="product-card">
-
-                <img src="../images/plant5.jpg"
-                    width="180">
-
-                <h3>Rose Plant</h3>
-
-                <p>₹349</p>
-
-                <button>Add to Cart</button>
-
-            </div>
+            <p>Loading recommended products...</p>
 
         </div>
 
@@ -214,6 +99,9 @@
 
     </footer>
 
-<script src="../js/script.js"></script>
+<script src="../js/cart.js?v=2"></script>
+<script src="../js/script.js?v=4"></script>
+<script src="../js/products.js?v=2"></script>
+<script src="../js/cart-page.js?v=2"></script>
 </body>
 </html>

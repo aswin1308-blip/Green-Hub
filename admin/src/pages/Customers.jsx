@@ -18,7 +18,7 @@ const formatDate = (iso) => {
 const shortId = (id) => (id ? `#${id.slice(-6).toUpperCase()}` : "--");
 
 function OrderStatusTag({ status }) {
-  return <span className={`badge badge-order-${status || "pending"}`}>{status || "pending"}</span>;
+  return <span className={`badge badge-order-${(status || "pending").toLowerCase()}`}>{status || "pending"}</span>;
 }
 
 export default function Customers() {
@@ -256,14 +256,10 @@ export default function Customers() {
                       <tr key={o._id}>
                         <td>{shortId(o._id)}</td>
                         <td>{formatDate(o.createdAt)}</td>
-                        <td>Rs.{o.totalAmount}</td>
+                        <td>Rs.{o.total}</td>
+                        <td>{o.paymentMethod || "--"}</td>
                         <td>
-                          <span className={`badge badge-payment-${o.paymentStatus || "pending"}`}>
-                            {o.paymentStatus || "pending"}
-                          </span>
-                        </td>
-                        <td>
-                          <OrderStatusTag status={o.orderStatus} />
+                          <OrderStatusTag status={o.status} />
                         </td>
                       </tr>
                     ))}

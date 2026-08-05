@@ -4,30 +4,16 @@ const buildOrderQuery = (req) => {
   const { status, from, to, customer, search } = req.query;
   const query = {};
 
-  if (status) query.orderStatus = status;
-  if (customer) query.user = customer;
+  if (status) query.status = status;
+  if (customer) query.customerId = customer;
 
   if (search) {
-    const mongoId = /^[0-9a-fA-F]{24}$/.test(search) ? search : null;
-    const [firstName = "", lastName = ""] = search.trim().split(/\s+/);
+    const term = search.trim();
+    const mongoId = /^[0-9a-fA-F]{24}$/.test(term) ? term : null;
     query.$or = [
       ...(mongoId ? [{ _id: mongoId }] : []),
-      {
-        "user.name": {
-          $regex: search.trim(),
-          $options: "i",
-        },
-      },
-      ...(firstName && lastName
-        ? [
-            {
-              $and: [
-                { "user.name": { $regex: firstName, $options: "i" } },
-                { "user.name": { $regex: lastName, $options: "i" } },
-              ],
-            },
-          ]
-        : []),
+      { customerName: { $regex: term, $options: "i" } },
+      { customerEmail: { $regex: term, $options: "i" } },
     ];
   }
 
@@ -58,12 +44,7 @@ const getAdminOrders = async (req, res, next) => {
     const query = buildOrderQuery(req);
 
     const [orders, total] = await Promise.all([
-      Order.find(query)
-        .populate("user", "name email phone")
-        .populate("items.product", "name images price")
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
-        .limit(limit),
+      Order.find(query).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit),
       Order.countDocuments(query),
     ]);
 
@@ -79,12 +60,10 @@ const getAdminOrders = async (req, res, next) => {
   }
 };
 
-// Admin: get a single order with populated details
+// Admin: get a single order with full customer details
 const getAdminOrder = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id)
-      .populate("user", "name email phone")
-      .populate("items.product", "name images price");
+    const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({
@@ -114,14 +93,14 @@ const updateOrderStatus = async (req, res, next) => {
       });
     }
 
-    if (order.orderStatus === "cancelled") {
+    if (order.status === "Cancelled") {
       return res.status(400).json({
         success: false,
         message: "Cannot change status of a cancelled order",
       });
     }
 
-    order.orderStatus = req.body.status;
+    order.status = req.body.status;
     await order.save();
 
     res.status(200).json({

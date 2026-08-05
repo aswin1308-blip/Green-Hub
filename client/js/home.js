@@ -15,7 +15,7 @@ function ghBuildHeroSlides() {
   const dotsEl = document.getElementById("gh-hero-dots");
   if (!slidesEl || !dotsEl) return;
 
-  const sources = ["../images/hero-banner.png"];
+  const sources = ["../images/hero-banner.jpg"];
 
   ghFetchJSON(GH_API_BASE + "/api/categories")
     .then((data) => {

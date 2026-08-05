@@ -54,65 +54,37 @@
 
         <p>Track your purchased plants and orders.</p>
 
-        <table border="1" cellpadding="15">
+        <div id="orders-gate" style="display:none;">
 
-            <tr>
+            <p>Please <a href="login.html">log in</a> to view your orders.</p>
 
-                <th>Order ID</th>
+        </div>
 
-                <th>Plant</th>
+        <div id="orders-content">
 
-                <th>Quantity</th>
+            <table border="1" cellpadding="15">
 
-                <th>Total</th>
+                <tr>
 
-                <th>Status</th>
+                    <th>Order Number</th>
 
-            </tr>
+                    <th>Products</th>
 
-            <tr>
+                    <th>Quantity</th>
 
-                <td>#GH1001</td>
+                    <th>Total</th>
 
-                <td>Snake Plant</td>
+                    <th>Status</th>
 
-                <td>2</td>
+                    <th>Date</th>
 
-                <td>₹798</td>
+                </tr>
 
-                <td style="color:green;">Delivered</td>
+                <tbody id="orders-table-body"></tbody>
 
-            </tr>
+            </table>
 
-            <tr>
-
-                <td>#GH1002</td>
-
-                <td>Money Plant</td>
-
-                <td>1</td>
-
-                <td>₹299</td>
-
-                <td style="color:orange;">Shipped</td>
-
-            </tr>
-
-            <tr>
-
-                <td>#GH1003</td>
-
-                <td>Peace Lily</td>
-
-                <td>3</td>
-
-                <td>₹1497</td>
-
-                <td style="color:blue;">Processing</td>
-
-            </tr>
-
-        </table>
+        </div>
 
     </section>
 
@@ -124,11 +96,11 @@
 
         <div class="summary-box">
 
-            <p>Total Orders : <strong>3</strong></p>
+            <p>Total Orders : <strong id="summary-orders-count">0</strong></p>
 
-            <p>Total Amount Spent : <strong>₹2594</strong></p>
+            <p>Total Amount Spent : <strong id="summary-total-spent">₹0</strong></p>
 
-            <p>Reward Points : <strong>250</strong></p>
+            <p>Reward Points : <strong>0</strong></p>
 
         </div>
 
@@ -150,7 +122,8 @@
 
     </footer>
 
-<script src="../js/script.js"></script>
+<script src="../js/cart.js?v=2"></script>
+<script src="../js/script.js?v=5"></script>
 </body>
 
 </html>

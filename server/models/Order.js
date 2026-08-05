@@ -1,23 +1,34 @@
 const mongoose = require("mongoose");
 
-const orderItemSchema = new mongoose.Schema(
+const orderProductSchema = new mongoose.Schema(
   {
-    product: {
+    productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
       required: [true, "Order item requires a product"],
     },
 
-    quantity: {
-      type: Number,
-      required: [true, "Order item quantity is required"],
-      min: [1, "Quantity must be at least 1"],
+    name: {
+      type: String,
+      required: [true, "Product name is required"],
+      trim: true,
+    },
+
+    image: {
+      type: String,
+      default: "",
     },
 
     price: {
       type: Number,
-      required: [true, "Order item price is required"],
+      required: [true, "Product price is required"],
       min: [0, "Price cannot be negative"],
+    },
+
+    quantity: {
+      type: Number,
+      required: [true, "Product quantity is required"],
+      min: [1, "Quantity must be at least 1"],
     },
   },
   { _id: false }
@@ -25,50 +36,74 @@ const orderItemSchema = new mongoose.Schema(
 
 const orderSchema = new mongoose.Schema(
   {
-    user: {
+    customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: [true, "Order requires a user"],
+      required: [true, "Order requires a customer"],
     },
 
-    items: {
-      type: [orderItemSchema],
+    customerName: {
+      type: String,
+      required: [true, "Customer name is required"],
+      trim: true,
+    },
+
+    customerEmail: {
+      type: String,
+      required: [true, "Customer email is required"],
+      lowercase: true,
+      trim: true,
+    },
+
+    customerPhone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    customerAddress: {
+      type: String,
+      required: [true, "Delivery address is required"],
+      trim: true,
+    },
+
+    products: {
+      type: [orderProductSchema],
       default: [],
     },
 
-    totalAmount: {
+    subtotal: {
+      type: Number,
+      default: 0,
+      min: [0, "Subtotal cannot be negative"],
+    },
+
+    deliveryCharge: {
+      type: Number,
+      default: 0,
+      min: [0, "Delivery charge cannot be negative"],
+    },
+
+    total: {
       type: Number,
       required: [true, "Total amount is required"],
       min: [0, "Total amount cannot be negative"],
     },
 
-    paymentStatus: {
-      type: String,
-      enum: {
-        values: ["pending", "paid", "failed", "refunded"],
-        message: "Payment status must be pending, paid, failed or refunded",
-      },
-      default: "pending",
-    },
-
-    paymentId: {
+    paymentMethod: {
       type: String,
       default: "",
+      trim: true,
     },
 
-    orderStatus: {
+    status: {
       type: String,
       enum: {
-        values: ["pending", "shipped", "delivered", "cancelled"],
-        message: "Order status must be pending, shipped, delivered or cancelled",
+        values: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"],
+        message:
+          "Order status must be Pending, Processing, Shipped, Delivered or Cancelled",
       },
-      default: "pending",
-    },
-
-    shippingAddress: {
-      type: String,
-      required: [true, "Shipping address is required"],
-      trim: true,
+      default: "Pending",
     },
   },
   {

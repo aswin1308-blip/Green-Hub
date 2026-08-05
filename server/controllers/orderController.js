@@ -1,16 +1,59 @@
 const Order = require("../models/Order");
 
-// Place Order
+// Place Order (protected - customer comes from JWT / MongoDB)
 const placeOrder = async (req, res) => {
   try {
-    const order = await Order.create(req.body);
+    const user = req.user;
+
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      customerAddress,
+      products,
+      subtotal,
+      deliveryCharge,
+      total,
+      paymentMethod,
+    } = req.body;
+
+    if (
+      !products ||
+      !Array.isArray(products) ||
+      products.length === 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "At least one product is required",
+      });
+    }
+
+    if (total === undefined || total === null || isNaN(total)) {
+      return res.status(400).json({
+        success: false,
+        message: "Total amount is required",
+      });
+    }
+
+    const order = await Order.create({
+      customerId: user._id,
+      customerName: (customerName || user.name || "").trim(),
+      customerEmail: (customerEmail || user.email || "").trim().toLowerCase(),
+      customerPhone: (customerPhone || user.phone || "").trim(),
+      customerAddress: (customerAddress || user.address || "").trim(),
+      products,
+      subtotal: Number(subtotal) || 0,
+      deliveryCharge: Number(deliveryCharge) || 0,
+      total: Number(total) || 0,
+      paymentMethod: (paymentMethod || "").trim(),
+      status: "Pending",
+    });
 
     res.status(201).json({
       success: true,
       message: "Order Placed Successfully",
       order,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -19,19 +62,17 @@ const placeOrder = async (req, res) => {
   }
 };
 
-// Get All Orders
-const getOrders = async (req, res) => {
+// Get My Orders (protected - only the logged-in customer's orders)
+const getMyOrders = async (req, res) => {
   try {
-
-    const orders = await Order.find()
-      .populate("user")
-      .populate("items.product");
+    const orders = await Order.find({ customerId: req.user._id }).sort({
+      createdAt: -1,
+    });
 
     res.status(200).json({
       success: true,
       orders,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -40,19 +81,32 @@ const getOrders = async (req, res) => {
   }
 };
 
-// Get One Order
+// Get One Order (protected - owner or admin)
 const getOrder = async (req, res) => {
   try {
+    const order = await Order.findById(req.params.id);
 
-    const order = await Order.findById(req.params.id)
-      .populate("user")
-      .populate("items.product");
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(order.customerId) !== String(req.user._id)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this order",
+      });
+    }
 
     res.status(200).json({
       success: true,
       order,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -61,22 +115,43 @@ const getOrder = async (req, res) => {
   }
 };
 
-// Update Order Status
+// Update Order Status (protected - owner or admin)
 const updateOrder = async (req, res) => {
   try {
+    const order = await Order.findById(req.params.id);
 
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(order.customerId) !== String(req.user._id)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this order",
+      });
+    }
+
+    if (req.body.status) order.status = req.body.status;
+    if (typeof req.body.customerPhone === "string") {
+      order.customerPhone = req.body.customerPhone.trim();
+    }
+    if (typeof req.body.customerAddress === "string") {
+      order.customerAddress = req.body.customerAddress.trim();
+    }
+
+    await order.save();
 
     res.status(200).json({
       success: true,
       message: "Order Updated",
       order,
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -85,9 +160,27 @@ const updateOrder = async (req, res) => {
   }
 };
 
-// Delete Order
+// Delete Order (protected - owner or admin)
 const deleteOrder = async (req, res) => {
   try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (
+      req.user.role !== "admin" &&
+      String(order.customerId) !== String(req.user._id)
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this order",
+      });
+    }
 
     await Order.findByIdAndDelete(req.params.id);
 
@@ -95,7 +188,6 @@ const deleteOrder = async (req, res) => {
       success: true,
       message: "Order Deleted",
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -106,7 +198,7 @@ const deleteOrder = async (req, res) => {
 
 module.exports = {
   placeOrder,
-  getOrders,
+  getMyOrders,
   getOrder,
   updateOrder,
   deleteOrder,

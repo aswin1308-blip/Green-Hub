@@ -9,16 +9,6 @@ const ghProductCache = new Map();
 
 /* ---------- helpers ---------- */
 
-function ghAssetUrl(path) {
-  if (!path) return "";
-  if (/^https?:\/\//.test(path)) return path;
-  return GH_API_BASE + (path.startsWith("/") ? "" : "/") + path;
-}
-
-function ghMoney(amount) {
-  return "₹" + Number(amount || 0).toLocaleString("en-IN");
-}
-
 function ghDiscountPercent(product) {
   const price = Number(product.price) || 0;
   const discount = Number(product.discountPrice) || 0;
@@ -83,12 +73,25 @@ function ghBuildProductCard(product) {
   }
   info.appendChild(price);
 
+  const actions = document.createElement("div");
+  actions.className = "gh-card-actions";
+
   const addBtn = document.createElement("button");
   addBtn.type = "button";
   addBtn.textContent = "Add to Cart";
   addBtn.dataset.original = "Add to Cart";
   addBtn.dataset.productId = product._id;
-  info.appendChild(addBtn);
+  actions.appendChild(addBtn);
+
+  const buyBtn = document.createElement("button");
+  buyBtn.type = "button";
+  buyBtn.textContent = "Buy Now";
+  buyBtn.dataset.original = "Buy Now";
+  buyBtn.dataset.productId = product._id;
+  buyBtn.dataset.buyNow = "";
+  actions.appendChild(buyBtn);
+
+  info.appendChild(actions);
 
   card.appendChild(info);
 
@@ -162,6 +165,8 @@ function ghRenderCategorySection(category) {
 async function ghInitCategoryProducts() {
   const mount = document.querySelector("#category-products");
   if (!mount) return;
+
+  ghBindCartButtons(mount);
 
   try {
     const data = await ghFetchJSON(GH_API_BASE + "/api/categories");
@@ -239,44 +244,6 @@ function ghScrollToCategory(event) {
   if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/* ---------- add to cart (delegated for dynamic cards) ---------- */
-
-function ghHandleAddToCart(event) {
-  const btn = event.target.closest("button[data-product-id]");
-  if (!btn) return;
-
-  const product = ghProductCache.get(btn.dataset.productId);
-  if (!product) return;
-
-  let cart = JSON.parse(localStorage.getItem("greenhubCart") || "[]");
-
-  const existing = cart.find((item) => item._id === product._id);
-  if (existing) {
-    existing.qty += 1;
-  } else {
-    cart.push({
-      _id: product._id,
-      name: product.name,
-      price: "₹" + (product.discountPrice || product.price),
-      image: product.image,
-      qty: 1,
-    });
-  }
-
-  localStorage.setItem("greenhubCart", JSON.stringify(cart));
-
-  if (typeof updateCartCount === "function") updateCartCount();
-  if (typeof showToast === "function") showToast(product.name + " added to cart");
-
-  const original = btn.dataset.original || btn.textContent;
-  btn.textContent = "Added ✓";
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.textContent = original;
-    btn.disabled = false;
-  }, 900);
-}
-
 /* ---------- live search (dynamic cards) ---------- */
 
 function ghHandleSearch() {
@@ -295,7 +262,6 @@ function ghHandleSearch() {
 
 /* ---------- init ---------- */
 
-document.addEventListener("click", ghHandleAddToCart);
 document.addEventListener("click", ghScrollToCategory);
 
 ghHandleSearch();

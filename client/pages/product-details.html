@@ -41,24 +41,22 @@
 
         <div class="product-image">
 
-            <img src="../images/plant1.jpg" alt="Snake Plant">
+            <img src="../images/plant1.jpg" alt="Product" id="pd-image">
 
         </div>
 
         <div class="product-info">
 
-            <h1>Snake Plant</h1>
+            <h1 id="pd-name">Loading...</h1>
 
-            <h2>₹399</h2>
+            <h2 id="pd-price">₹--</h2>
 
             <p>
                 ⭐⭐⭐⭐⭐ (4.9/5)
             </p>
 
-            <p>
-                Snake Plant is one of the best indoor air-purifying plants.
-                It requires very little maintenance and is perfect for homes,
-                offices, and apartments.
+            <p id="pd-desc">
+                Loading product details...
             </p>
 
             <h3>Benefits</h3>
@@ -77,13 +75,13 @@
 
             <h3>Quantity</h3>
 
-            <input type="number" value="1" min="1">
+            <input type="number" value="1" min="1" id="pd-qty">
 
             <br><br>
 
-            <button>Add to Cart</button>
+            <button id="pd-add">Add to Cart</button>
 
-            <button>Buy Now</button>
+            <button id="pd-buy" data-buy-now>Buy Now</button>
 
         </div>
 
@@ -224,7 +222,9 @@
 
     </footer>
 
-<script src="../js/script.js"></script>
+<script src="../js/cart.js?v=2"></script>
+<script src="../js/script.js?v=4"></script>
+<script src="../js/product-details.js?v=2"></script>
 </body>
 
 </html>

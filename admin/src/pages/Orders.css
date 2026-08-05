@@ -61,6 +61,11 @@
   color: #92400e;
 }
 
+.badge-order-processing {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 .badge-order-shipped {
   background: #e0f2fe;
   color: #075985;
@@ -133,6 +138,45 @@
 .order-total strong {
   font-size: 20px;
   color: var(--green-700);
+}
+
+.order-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-left: 4px;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.timeline-item p {
+  margin: 2px 0 0;
+  font-size: 14px;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-top: 5px;
+  background: var(--line);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px var(--line);
+  flex-shrink: 0;
+}
+
+.timeline-dot.done {
+  background: var(--green-600);
+  box-shadow: 0 0 0 1px var(--green-600);
+}
+
+.timeline-dot.active {
+  background: #f59e0b;
+  box-shadow: 0 0 0 1px #f59e0b;
 }
 
 @media (max-width: 640px) {

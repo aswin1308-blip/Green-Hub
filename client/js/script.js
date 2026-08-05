@@ -2,9 +2,17 @@
         GREEN HUB - SCRIPT.JS
 ========================================== */
 
-let cart = JSON.parse(localStorage.getItem("greenhubCart")) || [];
+try {
 
-updateCartCount();
+    updateCartCount(ghGuestCartCount());
+
+    ghRefreshCartBadge();
+
+} catch (error) {
+
+    console.error("Cart badge init failed:", error);
+
+}
 
 /* ==========================================
         TOAST MESSAGE
@@ -50,7 +58,7 @@ function showToast(message){
         CART COUNT
 ========================================== */
 
-function updateCartCount(){
+function updateCartCount(count){
 
     const icon=document.querySelector(".fa-cart-shopping");
 
@@ -83,105 +91,17 @@ function updateCartCount(){
 
     }
 
-    badge.innerText=cart.length;
+    const value = Number(count) || 0;
+
+    badge.innerText = value;
+
+    badge.style.display = value > 0 ? "flex" : "none";
 
 }
 
 /* ==========================================
-        ADD TO CART
+        CART BUTTONS (handled centrally in cart.js)
 ========================================== */
-
-const addButtons=document.querySelectorAll("button");
-
-addButtons.forEach(btn=>{
-
-    if(btn.innerText.trim()=="Add to Cart"){
-
-        btn.addEventListener("click",function(){
-
-            let card=this.closest(".product-card");
-
-            if(!card){
-
-                showToast("Added to Cart");
-
-                return;
-
-            }
-
-            let name=card.querySelector("h3").innerText;
-
-            let price=card.querySelector("p").innerText;
-
-            let image=card.querySelector("img").src;
-
-            cart.push({
-
-                name,
-
-                price,
-
-                image,
-
-                qty:1
-
-            });
-
-            localStorage.setItem("greenhubCart",JSON.stringify(cart));
-
-            updateCartCount();
-
-            showToast(name+" added to cart");
-
-        });
-
-    }
-
-});
-
-/* ==========================================
-        BUY NOW
-========================================== */
-
-document.querySelectorAll("button").forEach(btn=>{
-
-    if(btn.innerText.trim()=="Buy Now"){
-
-        btn.onclick=function(){
-
-            showToast("Redirecting to Checkout...");
-
-            setTimeout(()=>{
-
-                window.location.href="checkout.html";
-
-            },1000);
-
-        }
-
-    }
-
-});
-
-/* ==========================================
-        REMOVE FROM CART
-========================================== */
-
-document.querySelectorAll("button").forEach(btn=>{
-
-    if(btn.innerText.trim()=="Remove"){
-
-        btn.onclick=function(){
-
-            this.closest("tr").remove();
-
-            showToast("Item Removed");
-
-        }
-
-    }
-
-});
 
 /* ==========================================
         BUTTON RIPPLE
@@ -259,112 +179,296 @@ if (hamburger) {
 }
 
 /* ==========================================
-        LOGIN VALIDATION
+        LOGIN (backend auth)
 ========================================== */
 
-const loginForm=document.querySelector(".login-box form");
+const loginForm = document.querySelector(".login-box form");
 
-if(loginForm){
+if (loginForm) {
 
-loginForm.addEventListener("submit",function(e){
+    const loginErrorEl = document.getElementById("login-error");
 
-e.preventDefault();
+    const failLogin = (message) => {
 
-const email=this.querySelector('input[type="email"]').value.trim();
+        if (loginErrorEl) {
 
-const password=this.querySelector('input[type="password"]').value.trim();
+            loginErrorEl.textContent = message;
 
-if(email==="" || password===""){
+            loginErrorEl.hidden = false;
 
-showToast("Please fill all fields");
+        }
 
-return;
+        showToast(message);
 
-}
+    };
 
-if(password.length<6){
+    loginForm.addEventListener("submit", async function (e) {
 
-showToast("Password must be at least 6 characters");
+        e.preventDefault();
 
-return;
+        const emailInput = this.querySelector("#login-email") || this.querySelector('input[type="email"]');
 
-}
+        const passwordInput = this.querySelector("#login-password") || this.querySelector('input[type="password"]');
 
-showToast("Login Successful");
+        if (!emailInput || !passwordInput) {
 
-setTimeout(()=>{
+            failLogin("Could not find the login form fields. Please reload the page.");
 
-window.location.href="index.html";
+            return;
 
-},1000);
+        }
 
-});
+        const email = emailInput.value.trim();
+
+        const password = passwordInput.value.trim();
+
+        if (email === "" || password === "") {
+
+            showToast("Please fill all fields");
+
+            return;
+
+        }
+
+        if (loginErrorEl) loginErrorEl.hidden = true;
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+
+        const originalText = submitBtn ? submitBtn.innerText : "";
+
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = "Please Wait..."; }
+
+        try {
+
+            const data = await ghApiRequest("/api/auth/login", {
+
+                method: "POST",
+
+                headers: { "Content-Type": "application/json" },
+
+                body: JSON.stringify({ email, password })
+
+            });
+
+            if (!data.token) throw new Error("Login failed. Please try again.");
+
+            ghSetSession(data.token, data.user);
+
+            await ghSyncGuestCartToServer();
+
+            showToast("Login Successful");
+
+            const params = new URLSearchParams(window.location.search);
+
+            const redirect = params.get("redirect");
+
+            setTimeout(() => {
+
+                window.location.href = redirect || "index.html";
+
+            }, 800);
+
+        } catch (error) {
+
+            console.error("Login failed:", error);
+
+            failLogin(error.message || "Invalid email or password");
+
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = originalText; }
+        }
+
+    });
 
 }
 
 /* ==========================================
-        REGISTER VALIDATION
+        REGISTER (backend auth)
 ========================================== */
 
-const registerForm=document.querySelector(".register-box form");
+const registerForm = document.querySelector(".register-box form");
 
-if(registerForm){
+if (registerForm) {
 
-registerForm.addEventListener("submit",function(e){
+    const registerErrorEl = document.getElementById("register-error");
 
-e.preventDefault();
+    const failRegister = (message) => {
 
-const inputs=this.querySelectorAll("input");
+        if (registerErrorEl) {
 
-const name=inputs[0].value.trim();
-const email=inputs[1].value.trim();
-const mobile=inputs[2].value.trim();
-const password=inputs[3].value.trim();
-const confirm=inputs[4].value.trim();
+            registerErrorEl.textContent = message;
 
-if(name===""||email===""||mobile===""||password===""||confirm===""){
+            registerErrorEl.hidden = false;
 
-showToast("Please complete all fields");
+        }
 
-return;
+        showToast(message);
+
+    };
+
+    registerForm.addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        const nameInput = this.querySelector("#register-name") || this.querySelector('input[type="text"]');
+
+        const emailInput = this.querySelector("#register-email") || this.querySelector('input[type="email"]');
+
+        const mobileInput = this.querySelector("#register-mobile") || this.querySelector('input[type="tel"]');
+
+        const passwordInput = this.querySelector("#register-password") || this.querySelector('input[type="password"]');
+
+        const confirmInput = this.querySelector("#register-confirm");
+
+        if (!nameInput || !emailInput || !mobileInput || !passwordInput || !confirmInput) {
+
+            failRegister("Could not find the registration form fields. Please reload the page.");
+
+            return;
+
+        }
+
+        const name = nameInput.value.trim();
+
+        const email = emailInput.value.trim();
+
+        const mobile = mobileInput.value.trim();
+
+        const password = passwordInput.value.trim();
+
+        const confirm = confirmInput.value.trim();
+
+        if (name === "" || email === "" || mobile === "" || password === "" || confirm === "") {
+
+            failRegister("Please complete all fields");
+
+            return;
+
+        }
+
+        if (mobile.length !== 10) {
+
+            failRegister("Enter a valid mobile number");
+
+            return;
+
+        }
+
+        if (password.length < 6) {
+
+            failRegister("Password should contain at least 6 characters");
+
+            return;
+
+        }
+
+        if (password !== confirm) {
+
+            failRegister("Passwords do not match");
+
+            return;
+
+        }
+
+        if (registerErrorEl) registerErrorEl.hidden = true;
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+
+        const originalText = submitBtn ? submitBtn.innerText : "";
+
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.innerText = "Please Wait..."; }
+
+        try {
+
+            const data = await ghApiRequest("/api/auth/register", {
+
+                method: "POST",
+
+                headers: { "Content-Type": "application/json" },
+
+                body: JSON.stringify({ name, email, password, phone: mobile })
+
+            });
+
+            if (!data.token) throw new Error("Registration failed. Please try again.");
+
+            ghSetSession(data.token, data.user);
+
+            await ghSyncGuestCartToServer();
+
+            showToast("Registration Successful");
+
+            const params = new URLSearchParams(window.location.search);
+
+            const redirect = params.get("redirect");
+
+            setTimeout(() => {
+
+                window.location.href = redirect || "index.html";
+
+            }, 800);
+
+        } catch (error) {
+
+            console.error("Registration failed:", error);
+
+            failRegister(error.message || "Registration failed. Please try again.");
+
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = originalText; }
+        }
+
+    });
 
 }
 
-if(mobile.length!=10){
+/* ==========================================
+        AUTH UI (show logged-in user + logout)
+========================================== */
 
-showToast("Enter a valid mobile number");
+function ghRenderAuthUI() {
 
-return;
+    if (typeof ghIsLoggedIn !== "function" || !ghIsLoggedIn()) return;
+
+    const user = ghGetUser();
+
+    const loginLink = document.querySelector('header nav a[href="login.html"]');
+
+    if (!loginLink) return;
+
+    const name = (user && (user.name || user.email)) || "Account";
+
+    const first = String(name).trim().split(/\s+/)[0] || "Account";
+
+    loginLink.textContent = first;
+
+    loginLink.setAttribute("href", "profile.html");
+
+    loginLink.title = user && user.email ? user.email : "";
+
+    const logout = document.createElement("a");
+
+    logout.href = "#";
+
+    logout.textContent = "Logout";
+
+    logout.title = "Log out of Green Hub";
+
+    logout.addEventListener("click", function (e) {
+
+        e.preventDefault();
+
+        ghClearSession();
+
+        showToast("Logged out");
+
+        window.location.reload();
+
+    });
+
+    loginLink.parentNode.insertBefore(logout, loginLink.nextSibling);
 
 }
 
-if(password.length<6){
-
-showToast("Password should contain at least 6 characters");
-
-return;
-
-}
-
-if(password!==confirm){
-
-showToast("Passwords do not match");
-
-return;
-
-}
-
-showToast("Registration Successful");
-
-setTimeout(()=>{
-
-window.location.href="login.html";
-
-},1200);
-
-});
-
-}
+ghRenderAuthUI();
 
 /* ==========================================
         CONTACT FORM
@@ -446,56 +550,102 @@ emailInput.value="";
 }
 
 /* ==========================================
-        PROFILE UPDATE
+        PROFILE UPDATE (saves to MongoDB via /api/auth/me)
 ========================================== */
 
 const profileForm=document.querySelector(".profile-details form");
 
 if(profileForm){
 
-profileForm.addEventListener("submit",function(e){
+    const profileName=document.getElementById("profile-name");
+    const profileEmail=document.getElementById("profile-email");
+    const profilePhone=document.getElementById("profile-phone");
+    const profileAddress=document.getElementById("profile-address");
+    const displayName=document.getElementById("profile-display-name");
 
-e.preventDefault();
+    // Load the logged-in customer's latest profile from MongoDB
+    async function loadProfile(){
+        if(typeof ghIsLoggedIn!=="function"||!ghIsLoggedIn())return;
 
-showToast("Profile Updated Successfully");
+        try{
+            const data=await ghApiRequest("/api/auth/me");
+            const u=data.user||{};
+            if(profileName)profileName.value=u.name||"";
+            if(profileEmail)profileEmail.value=u.email||"";
+            if(profilePhone)profilePhone.value=u.phone||"";
+            if(profileAddress)profileAddress.value=u.address||"";
+            if(displayName)displayName.textContent=u.name||"Customer";
+        }catch(error){
+            console.error("Failed to load profile:",error);
+            showToast(error.message||"Could not load your profile.");
+        }
+    }
 
-});
+    loadProfile();
+
+    profileForm.addEventListener("submit",async function(e){
+
+        e.preventDefault();
+
+        if(typeof ghIsLoggedIn!=="function"||!ghIsLoggedIn()){
+            showToast("Please log in first");
+            return;
+        }
+
+        const name=profileName?profileName.value.trim():"";
+        const email=profileEmail?profileEmail.value.trim():"";
+        const phone=profilePhone?profilePhone.value.trim():"";
+        const address=profileAddress?profileAddress.value.trim():"";
+
+        if(name===""||email===""){
+            showToast("Name and email are required");
+            return;
+        }
+
+        const submitBtn=this.querySelector('button[type="submit"]');
+        const originalText=submitBtn?submitBtn.innerText:"";
+
+        if(submitBtn){submitBtn.disabled=true;submitBtn.innerText="Saving...";}
+
+        try{
+
+            const data=await ghApiRequest("/api/auth/me",{
+
+                method:"PUT",
+
+                headers:{"Content-Type":"application/json"},
+
+                body:JSON.stringify({name,email,phone,address})
+
+            });
+
+            if(data.user&&typeof ghSetSession==="function"){
+                ghSetSession(ghGetToken(),data.user);
+            }
+
+            showToast("Profile Updated Successfully");
+
+            if(displayName)displayName.textContent=name;
+
+        }catch(error){
+
+            console.error("Profile update failed:",error);
+
+            showToast(error.message||"Could not update your profile.");
+
+        }finally{
+
+            if(submitBtn){submitBtn.disabled=false;submitBtn.innerText=originalText;}
+
+        }
+
+    });
 
 }
 
 /* ==========================================
-        PAYMENT VALIDATION
+        PAYMENT (handled centrally in checkout.js)
 ========================================== */
-
-const paymentForm=document.querySelector(".payment form");
-
-if(paymentForm){
-
-paymentForm.addEventListener("submit",function(e){
-
-e.preventDefault();
-
-const method=this.querySelector('input[type="radio"]:checked');
-
-if(!method){
-
-showToast("Select a payment method");
-
-return;
-
-}
-
-showToast("Order Placed Successfully");
-
-setTimeout(()=>{
-
-window.location.href="orders.html";
-
-},1500);
-
-});
-
-}
 /* ==========================================
         LIVE PRODUCT SEARCH
 ========================================== */
@@ -532,85 +682,8 @@ if (searchSection) {
 }
 
 /* ==========================================
-        CART QUANTITY
+        CART QUANTITY + TOTALS (handled in cart-page.js / checkout.js)
 ========================================== */
-
-document.querySelectorAll('input[type="number"]').forEach(input => {
-
-    input.addEventListener("change", function () {
-
-        if (this.value < 1) {
-
-            this.value = 1;
-
-        }
-
-        calculateCart();
-
-    });
-
-});
-
-/* ==========================================
-        CART TOTAL
-========================================== */
-
-function calculateCart() {
-
-    const table = document.querySelector(".cart table");
-
-    if (!table) return;
-
-    let subtotal = 0;
-
-    const rows = table.querySelectorAll("tr");
-
-    rows.forEach((row, index) => {
-
-        if (index === 0) return;
-
-        const priceCell = row.cells[2];
-        const qtyInput = row.querySelector("input");
-
-        if (!priceCell || !qtyInput) return;
-
-        const price = parseInt(priceCell.innerText.replace(/[₹,]/g, ""));
-        const qty = parseInt(qtyInput.value);
-
-        const total = price * qty;
-
-        row.cells[4].innerText = "₹" + total;
-
-        subtotal += total;
-
-    });
-
-    const summary = document.querySelector(".summary");
-
-    if (summary) {
-
-        const p = summary.querySelectorAll("p");
-        const h3 = summary.querySelector("h3");
-
-        if (p.length >= 3) {
-
-            p[0].innerHTML = "Items : <strong>" + cart.length + "</strong>";
-            p[1].innerHTML = "Subtotal : ₹" + subtotal;
-            p[2].innerHTML = "Delivery : ₹50";
-
-        }
-
-        if (h3) {
-
-            h3.innerHTML = "Total : ₹" + (subtotal + 50);
-
-        }
-
-    }
-
-}
-
-calculateCart();
 
 /* ==========================================
         WISHLIST
@@ -635,6 +708,28 @@ document.querySelectorAll(".fa-heart").forEach(icon => {
     });
 
 });
+
+/* ==========================================
+        CART ICON NAVIGATION
+========================================== */
+
+document.querySelectorAll(".fa-cart-shopping").forEach(icon => {
+
+    icon.style.cursor = "pointer";
+
+    icon.addEventListener("click", function () {
+
+        ghGoToCart();
+
+    });
+
+});
+
+function ghGoToCart() {
+
+    window.location.href = "cart.html";
+
+}
 
 /* ==========================================
         CATEGORY FILTER
@@ -840,40 +935,6 @@ document.querySelectorAll("img").forEach(img => {
 });
 
 /* ==========================================
-        BUTTON LOADING
-========================================== */
-
-document.querySelectorAll("button").forEach(btn => {
-
-    btn.addEventListener("click", function () {
-
-        if (
-            this.innerText === "Add to Cart" ||
-            this.innerText === "Buy Now" ||
-            this.innerText === "Login" ||
-            this.innerText === "Register"
-        ) {
-
-            const original = this.innerText;
-
-            this.innerText = "Please Wait...";
-
-            this.disabled = true;
-
-            setTimeout(() => {
-
-                this.innerText = original;
-                this.disabled = false;
-
-            }, 1000);
-
-        }
-
-    });
-
-});
-
-/* ==========================================
         BACKGROUND FADE
 ========================================== */
 
@@ -959,6 +1020,150 @@ document.addEventListener("keydown", function (e) {
     }
 
 });
+
+/* ==========================================
+        MY ORDERS (customer orders page)
+========================================== */
+
+function ghStatusColor(status){
+
+    const s=String(status||"").toLowerCase();
+
+    if(s==="delivered")return "#2e7d32";
+
+    if(s==="shipped"||s==="processing")return "#f9a825";
+
+    if(s==="cancelled")return "#c62828";
+
+    return "#1565c0";
+
+}
+
+const ordersTableBody=document.getElementById("orders-table-body");
+
+if(ordersTableBody){
+
+(async function loadMyOrders(){
+
+    const gate=document.getElementById("orders-gate");
+
+    const content=document.getElementById("orders-content");
+
+    if(typeof ghIsLoggedIn!=="function"||!ghIsLoggedIn()){
+
+        if(gate)gate.style.display="block";
+
+        if(content)content.style.display="none";
+
+        return;
+
+    }
+
+    if(content)content.style.display="block";
+
+    if(gate)gate.style.display="none";
+
+    let messageRow="";
+
+    try{
+
+        const data=await ghApiRequest("/api/orders/mine");
+
+        const orders=data.orders||[];
+
+        const countEl=document.getElementById("summary-orders-count");
+
+        const totalEl=document.getElementById("summary-total-spent");
+
+        if(countEl)countEl.textContent=String(orders.length);
+
+        let spent=0;
+
+        orders.forEach((o)=>{spent+=Number(o.total)||0;});
+
+        if(totalEl)totalEl.textContent=ghMoney(spent);
+
+        if(orders.length===0){
+
+            messageRow="No orders yet.";
+
+            const tr=document.createElement("tr");
+
+            const td=document.createElement("td");
+
+            td.colSpan=6;
+
+            td.style.textAlign="center";
+
+            td.textContent=messageRow;
+
+            tr.appendChild(td);
+
+            ordersTableBody.appendChild(tr);
+
+            return;
+
+        }
+
+        orders.forEach((order)=>{
+
+            const tr=document.createElement("tr");
+
+            const idTd=document.createElement("td");
+
+            idTd.textContent="#"+String(order._id||"").slice(-8).toUpperCase();
+
+            const productsTd=document.createElement("td");
+
+            productsTd.textContent=(order.products||[]).map((p)=>p.name||"Product").join(", ");
+
+            const qtyTd=document.createElement("td");
+
+            const totalQty=(order.products||[]).reduce((s,p)=>s+(parseInt(p.quantity,10)||0),0);
+
+            qtyTd.textContent=String(totalQty);
+
+            const totalTd=document.createElement("td");
+
+            totalTd.textContent=ghMoney(order.total);
+
+            const statusTd=document.createElement("td");
+
+            statusTd.textContent=order.status||"Pending";
+
+            statusTd.style.color=ghStatusColor(order.status);
+
+            const dateTd=document.createElement("td");
+
+            dateTd.textContent=new Date(order.createdAt).toLocaleDateString();
+
+            tr.append(idTd,productsTd,qtyTd,totalTd,statusTd,dateTd);
+
+            ordersTableBody.appendChild(tr);
+
+        });
+
+    }catch(error){
+
+        console.error("Failed to load orders:",error);
+
+        const tr=document.createElement("tr");
+
+        const td=document.createElement("td");
+
+        td.colSpan=6;
+
+        td.textContent=error.message||"Could not load your orders.";
+
+        tr.appendChild(td);
+
+        ordersTableBody.appendChild(tr);
+
+    }
+
+})();
+
+}
 
 /* ==========================================
         CONSOLE MESSAGE

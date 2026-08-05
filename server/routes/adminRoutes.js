@@ -137,8 +137,8 @@ router.patch(
   [
     check("id").isMongoId().withMessage("Invalid order id"),
     body("status").exists().withMessage("Status is required")
-      .isIn(["pending", "shipped", "delivered", "cancelled"])
-      .withMessage("Status must be pending, shipped, delivered or cancelled"),
+      .isIn(["Pending", "Processing", "Shipped", "Delivered", "Cancelled"])
+      .withMessage("Status must be Pending, Processing, Shipped, Delivered or Cancelled"),
   ],
   validate,
   adminOrderController.updateOrderStatus

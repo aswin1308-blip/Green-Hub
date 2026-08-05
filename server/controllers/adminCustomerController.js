@@ -30,7 +30,7 @@ const getCustomers = async (req, res, next) => {
     ]);
 
     const orderCounts = await Order.aggregate([
-      { $group: { _id: "$user", count: { $sum: 1 } } },
+      { $group: { _id: "$customerId", count: { $sum: 1 } } },
     ]);
     const countMap = new Map(orderCounts.map((o) => [String(o._id), o.count]));
 

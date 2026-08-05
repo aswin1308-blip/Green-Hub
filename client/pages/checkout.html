@@ -46,9 +46,27 @@
 
     </header>
 
+    <!-- Login Required -->
+
+    <section class="checkout" id="require-login" style="display:none">
+
+        <h1>Login Required</h1>
+
+        <p class="gh-checkout-gate-note">
+            Please log in to complete your purchase and continue to checkout.
+        </p>
+
+        <a href="login.html?redirect=checkout.html">
+
+            <button type="button">Login to Continue</button>
+
+        </a>
+
+    </section>
+
     <!-- Checkout -->
 
-    <section class="checkout">
+    <section class="checkout" id="checkout-content">
 
         <h1>Checkout</h1>
 
@@ -62,13 +80,13 @@
 
                 <form>
 
-                    <input type="text" placeholder="Full Name" required>
+                    <input type="text" id="billing-name" placeholder="Full Name" required>
 
-                    <input type="email" placeholder="Email Address" required>
+                    <input type="email" id="billing-email" placeholder="Email Address" required>
 
-                    <input type="tel" placeholder="Phone Number" required>
+                    <input type="tel" id="billing-phone" placeholder="Phone Number" required>
 
-                    <textarea placeholder="Delivery Address" rows="5"></textarea>
+                    <textarea id="billing-address" placeholder="Delivery Address" rows="5"></textarea>
 
                     <input type="text" placeholder="City">
 
@@ -86,17 +104,19 @@
 
                 <h2>Order Summary</h2>
 
-                <p>Snake Plant × 1 <span>₹399</span></p>
+                <div id="checkout-summary">
 
-                <p>Money Plant × 2 <span>₹598</span></p>
+                    <p>Loading your order...</p>
 
-                <hr>
+                </div>
 
-                <p>Subtotal <span>₹997</span></p>
+                <br>
 
-                <p>Delivery Charge <span>₹50</span></p>
+                <button type="button" id="proceed-to-payment">
 
-                <h3>Total <span>₹1047</span></h3>
+                    Proceed to Payment
+
+                </button>
 
             </div>
 
@@ -106,7 +126,7 @@
 
     <!-- Payment -->
 
-    <section class="payment">
+    <section class="payment" id="payment-section">
 
         <h2>Select Payment Method</h2>
 
@@ -114,7 +134,7 @@
 
             <label>
 
-                <input type="radio" name="payment">
+                <input type="radio" name="payment" value="UPI">
 
                 UPI
 
@@ -124,7 +144,7 @@
 
             <label>
 
-                <input type="radio" name="payment">
+                <input type="radio" name="payment" value="Google Pay">
 
                 Google Pay
 
@@ -134,7 +154,7 @@
 
             <label>
 
-                <input type="radio" name="payment">
+                <input type="radio" name="payment" value="PhonePe">
 
                 PhonePe
 
@@ -144,7 +164,7 @@
 
             <label>
 
-                <input type="radio" name="payment">
+                <input type="radio" name="payment" value="Debit / Credit Card">
 
                 Debit / Credit Card
 
@@ -154,7 +174,7 @@
 
             <label>
 
-                <input type="radio" name="payment">
+                <input type="radio" name="payment" value="Cash on Delivery">
 
                 Cash on Delivery
 
@@ -230,7 +250,9 @@
 
     </footer>
 
-<script src="../js/script.js"></script>
+<script src="../js/cart.js?v=2"></script>
+<script src="../js/script.js?v=5"></script>
+<script src="../js/checkout.js?v=3"></script>
 </body>
 
 </html>

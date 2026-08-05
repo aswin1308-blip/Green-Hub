@@ -58,23 +58,31 @@
 
             <form>
 
-                <label>Email Address</label>
+                <label for="login-email">Email Address</label>
 
                 <input type="email"
+                    id="login-email"
+                    name="email"
                     placeholder="Enter your email"
+                    autocomplete="email"
                     required>
 
-                <label>Password</label>
+                <label for="login-password">Password</label>
 
                 <input type="password"
+                    id="login-password"
+                    name="password"
                     placeholder="Enter your password"
+                    autocomplete="current-password"
                     required>
 
                 <div class="options">
 
                     <label>
 
-                        <input type="checkbox">
+                        <input type="checkbox"
+                            id="login-remember"
+                            name="remember">
 
                         Remember Me
 
@@ -83,6 +91,8 @@
                     <a href="#">Forgot Password?</a>
 
                 </div>
+
+                <p id="login-error" class="auth-error" hidden></p>
 
                 <button type="submit">
 
@@ -168,7 +178,8 @@
 
     </footer>
 
-<script src="../js/script.js"></script>
+<script src="../js/cart.js?v=2"></script>
+<script src="../js/script.js?v=4"></script>
 </body>
 
 </html>

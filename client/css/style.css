@@ -1110,6 +1110,26 @@ margin-top:20px;
 
 }
 
+.auth-error{
+
+color:#c62828;
+
+background:#fdecea;
+
+border:1px solid #ef9a9a;
+
+padding:10px 12px;
+
+border-radius:6px;
+
+font-size:14px;
+
+margin-top:15px;
+
+text-align:left;
+
+}
+
 .options{
 
 display:flex;
@@ -2305,6 +2325,28 @@ header{
 .product-card .product-info button:hover{
     background:#1b5e20;
     transform:translateY(-2px);
+}
+
+.product-card .product-info .gh-card-actions{
+    display:flex;
+    gap:8px;
+    margin-top:auto;
+}
+
+.product-card .product-info .gh-card-actions button{
+    flex:1;
+}
+
+.product-card .product-info .gh-card-actions button:disabled{
+    opacity:.7;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.gh-checkout-gate-note{
+    color:#666;
+    max-width:420px;
+    margin:0 auto 20px;
 }
 
 /* ---------- features (why choose us) ---------- */
