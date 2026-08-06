@@ -260,77 +260,24 @@
     });
   }
 
-  /* ---------------- mega dropdown categories ---------------- */
-
-  function fillMegaCategories() {
-    var mounts = $$('[data-mega-cats]');
-    if (!mounts.length) return;
-    ghFetchJSON(API + '/api/categories')
-      .then(function (data) {
-        var cats = data.categories || [];
-        if (!cats.length) return;
-        mounts.forEach(function (mount) {
-          var html = cats.slice(0, 4).map(function (c) {
-            return '<a class="gh-mega-cat-link" href="products.html?category=' + encodeURIComponent(c._id) + '">' +
-              '<img src="' + escAttr(ghAssetUrl(c.image)) + '" alt="' + escAttr(c.name) + '" loading="lazy">' +
-              '<span>' + esc(c.name) + '</span></a>';
-          }).join('');
-          mount.innerHTML = html;
-          $$('img', mount).forEach(ghHandleImageError);
-        });
-      })
-      .catch(function () {});
-  }
-
   /* ---------------- hero slider ---------------- */
 
   function buildHeroSlides() {
     var hero = $('.gh-hero');
     if (!hero) return;
 
-    var fallbackSlides = [
-      {
-        img: '../images/hero-banner.jpg',
-        kicker: 'Premium Nursery',
-        title: 'Bring Home Green, <span style="color:#A5D6A7">Grow Happy</span>',
-        sub: 'Healthy plants, fresh seeds and smart gardening essentials delivered to your doorstep.',
-        cta: 'Shop All Plants',
-        href: 'products.html'
-      },
-      {
-        img: '../images/plant2.jpg',
-        kicker: 'Monsoon Sale',
-        title: 'Flat 25% Off on Seeds & Saplings',
-        sub: 'Use code GREEN25 at checkout. Limited time offer on hand-picked varieties.',
-        cta: 'Explore Offers',
-        href: 'products.html?sort=discount'
-      },
-      {
-        img: '../images/plant3.jpg',
-        kicker: 'Garden Essentials',
-        title: 'Everything Your Garden Needs',
-        sub: 'Planters, potting mixes and tools curated by our in-house horticulturists.',
-        cta: 'View All Products',
-        href: 'products.html'
-      }
-    ];
-
-    ghFetchJSON(API + '/api/categories')
+    ghFetchJSON(API + '/api/banners')
       .then(function (data) {
-        var cats = data.categories || [];
-        var catSlides = cats.slice(0, 4).map(function (c) {
-          return {
-            img: ghAssetUrl(c.image),
-            kicker: 'Shop by Category',
-            title: c.name,
-            sub: c.description || 'Explore our premium collection of ' + c.name.toLowerCase() + '.',
-            cta: 'Shop ' + c.name,
-            href: 'products.html?category=' + encodeURIComponent(c._id)
-          };
-        });
-        renderHero([].concat(fallbackSlides.slice(0, 1), catSlides, fallbackSlides.slice(1)).slice(0, 5));
+        var banners = (data && data.banners) || [];
+        if (!Array.isArray(banners) || banners.length === 0) {
+          hero.style.display = 'none';
+          return;
+        }
+        renderHero(banners);
       })
-      .catch(function () { renderHero(fallbackSlides); });
+      .catch(function () {
+        hero.style.display = 'none';
+      });
   }
 
   function renderHero(slides) {
@@ -346,13 +293,7 @@
     slides.forEach(function (s, i) {
       var slide = document.createElement('div');
       slide.className = 'gh-hero-slide' + (i === 0 ? ' gh-active' : '');
-      slide.innerHTML = '<img src="' + escAttr(s.img) + '" alt="' + escAttr(s.title.replace(/<[^>]+>/g, '')) + '" loading="' + (i === 0 ? 'eager' : 'lazy') + '">' +
-        '<div class="gh-hero-caption">' +
-        (s.kicker ? '<span class="gh-kicker"><i class="fa-solid fa-seedling"></i>' + esc(s.kicker) + '</span>' : '') +
-        '<h1>' + s.title + '</h1>' +
-        (s.sub ? '<p>' + esc(s.sub) + '</p>' : '') +
-        '<a class="gh-btn gh-btn--white" href="' + escAttr(s.href) + '">' + esc(s.cta) + ' <i class="fa-solid fa-arrow-right"></i></a>' +
-        '</div>';
+      slide.innerHTML = '<img src="' + escAttr(ghAssetUrl(s.imageUrl)) + '" alt="" loading="' + (i === 0 ? 'eager' : 'lazy') + '">';
       track.appendChild(slide);
       $$('img', slide).forEach(ghHandleImageError);
 
@@ -371,6 +312,12 @@
     var hero = $('.gh-hero');
     if (!hero) return;
     var current = 0;
+
+    if (count < 2) {
+      $$('.gh-hero-arrow', hero).forEach(function (b) { b.style.display = 'none'; });
+      $$('.gh-hero-dot', hero).forEach(function (d) { d.style.display = 'none'; });
+      return;
+    }
 
     function goSlide(index) {
       current = (index + count) % count;
@@ -395,7 +342,156 @@
     hero.addEventListener('mouseenter', function () { clearInterval(HERO_TIMER); });
     hero.addEventListener('mouseleave', restart);
 
+    var touchX = null;
+    hero.addEventListener('touchstart', function (e) {
+      touchX = e.touches[0].clientX;
+    }, { passive: true });
+    hero.addEventListener('touchend', function (e) {
+      if (touchX === null) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      touchX = null;
+      if (Math.abs(dx) > 40) goSlide(current + (dx < 0 ? 1 : -1));
+    });
+
     restart();
+  }
+
+  /* ---------------- homepage banner carousel ---------------- */
+
+  var BANNER_TIMER = null;
+  var BANNER_CURRENT = 0;
+  var BANNER_COUNT = 0;
+  var BANNER_DELAY = 4500;
+
+  var BANNER_FEATURES =
+    '<div class="gh-teak-features">' +
+    '<div class="gh-teak-feature"><span class="gh-teak-feature-icon"><i class="fa-solid fa-vial"></i></span><div><b>Tissue Culture</b><span>Technology</span></div></div>' +
+    '<div class="gh-teak-feature"><span class="gh-teak-feature-icon"><i class="fa-solid fa-shield-check"></i></span><div><b>Disease Free</b><span>Plants</span></div></div>' +
+    '<div class="gh-teak-feature"><span class="gh-teak-feature-icon"><i class="fa-solid fa-seedling"></i></span><div><b>Fast Growth</b><span>High Timber Quality</span></div></div>' +
+    '<div class="gh-teak-feature"><span class="gh-teak-feature-icon"><i class="fa-solid fa-tree"></i></span><div><b>Strong Root System</b><span>Better Establishment</span></div></div>' +
+    '<div class="gh-teak-feature"><span class="gh-teak-feature-icon"><i class="fa-solid fa-truck-fast"></i></span><div><b>Safe &amp; Secure</b><span>Pan India Delivery</span></div></div>' +
+    '</div>';
+
+  function ghEscHtml(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function ghBannerSlideHtml(b) {
+    var title = ghEscHtml(b.title);
+    var subtitle = ghEscHtml(b.subtitle);
+    var highlight = ghEscHtml(b.highlightText);
+    var discount = ghEscHtml(b.discountText);
+    var price = ghEscHtml(b.price);
+    var note = ghEscHtml(b.priceNote);
+    var img = escAttr(ghAssetUrl(b.imageUrl)) || '../images/plant3.jpg';
+
+    return (
+      '<div class="gh-teak-inner">' +
+      '<div class="gh-teak-content">' +
+      (subtitle
+        ? '<span class="gh-teak-kicker"><i class="fa-solid fa-leaf"></i> ' + subtitle + ' <i class="fa-solid fa-leaf"></i></span>'
+        : '') +
+      '<h2 class="gh-teak-title">' + title + '</h2>' +
+      (highlight ? '<div class="gh-teak-ribbon">' + highlight + '</div>' : '') +
+      (discount
+        ? '<div class="gh-teak-badge"><span>Get Up To</span><strong>' + discount + '</strong></div>'
+        : '') +
+      BANNER_FEATURES +
+      '</div>' +
+      '<div class="gh-teak-media">' +
+      '<img src="' + img + '" alt="' + title + '" loading="lazy">' +
+      (price || note
+        ? '<div class="gh-teak-price-tag">' +
+          (price ? '<strong class="gh-teak-price-new">' + price + '</strong>' : '') +
+          (note ? '<small>' + note + '</small>' : '') +
+          '</div>'
+        : '') +
+      '</div>' +
+      '</div>'
+    );
+  }
+
+  function ghBannerGo(index) {
+    var slides = $$('[data-banner-track] .gh-teak-slide');
+    var dots = $$('[data-banner-dots] .gh-banner-dot');
+    if (!slides.length) return;
+
+    BANNER_COUNT = slides.length;
+    BANNER_CURRENT = (index + BANNER_COUNT) % BANNER_COUNT;
+
+    slides.forEach(function (s, i) {
+      s.classList.toggle('gh-active', i === BANNER_CURRENT);
+    });
+    dots.forEach(function (d, i) {
+      d.classList.toggle('gh-active', i === BANNER_CURRENT);
+    });
+
+    ghBannerRestart();
+  }
+
+  function ghBannerRestart() {
+    clearInterval(BANNER_TIMER);
+    if (BANNER_COUNT < 2) return;
+    BANNER_TIMER = setInterval(function () {
+      ghBannerGo(BANNER_CURRENT + 1);
+    }, BANNER_DELAY);
+  }
+
+  function renderBannerSlides(banners, track, dotsWrap) {
+    track.innerHTML = '';
+    dotsWrap.innerHTML = '';
+
+    banners.forEach(function (b, i) {
+      var slide = document.createElement('div');
+      slide.className = 'gh-teak-slide' + (i === 0 ? ' gh-active' : '');
+      slide.innerHTML = ghBannerSlideHtml(b);
+      track.appendChild(slide);
+      $$('img', slide).forEach(ghHandleImageError);
+
+      var dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'gh-banner-dot' + (i === 0 ? ' gh-active' : '');
+      dot.setAttribute('aria-label', 'Go to banner ' + (i + 1));
+      dot.addEventListener('click', function () {
+        ghBannerGo(i);
+      });
+      dotsWrap.appendChild(dot);
+    });
+
+    BANNER_COUNT = banners.length;
+    ghBannerRestart();
+  }
+
+  function loadHomeBanners() {
+    var banner = $('[data-banner-carousel]');
+    if (!banner) return;
+
+    var track = $('[data-banner-track]');
+    var dotsWrap = $('[data-banner-dots]');
+    if (!track || !dotsWrap) return;
+
+    banner.addEventListener('mouseenter', function () {
+      clearInterval(BANNER_TIMER);
+    });
+    banner.addEventListener('mouseleave', ghBannerRestart);
+
+    ghFetchJSON(API + '/api/banners')
+      .then(function (data) {
+        var banners = (data && data.banners) || data;
+        if (!Array.isArray(banners) || banners.length === 0) {
+          ghBannerRestart();
+          return;
+        }
+        renderBannerSlides(banners, track, dotsWrap);
+      })
+      .catch(function () {
+        ghBannerRestart();
+      });
   }
 
   /* ---------------- category circles ---------------- */
@@ -424,6 +520,31 @@
       .catch(function () {
         mount.innerHTML = '<p class="gh-note">Unable to load categories. Please try again later.</p>';
       });
+  }
+
+  /* ---------------- category carousel arrows ---------------- */
+
+  function initCategoryCarousel() {
+    var carousel = $('.gh-cats-row');
+    if (!carousel) return;
+
+    var prev = $('.gh-carrow.prev', carousel.parentElement);
+    var next = $('.gh-carrow.next', carousel.parentElement);
+    if (!prev || !next) return;
+
+    var step = function () {
+      var item = $('.gh-cat-item', carousel);
+      var itemStep = item ? item.getBoundingClientRect().width + 28 : 300;
+      var visible = Math.max(1, Math.round(carousel.clientWidth / itemStep));
+      return itemStep * visible;
+    };
+
+    prev.addEventListener('click', function () {
+      carousel.scrollBy({ left: -step(), behavior: 'smooth' });
+    });
+    next.addEventListener('click', function () {
+      carousel.scrollBy({ left: step(), behavior: 'smooth' });
+    });
   }
 
   /* ---------------- product cards ---------------- */
@@ -604,7 +725,7 @@
     }
     if (catWrap) {
       catWrap.innerHTML = '';
-      ghFetchJSON(API + '/api/categories')
+      ghFetchJSON(API + '/api/categories/all')
         .then(function (data) {
           var cats = data.categories || [];
           catWrap.innerHTML = cats.slice(0, 8).map(function (c) {
@@ -1059,8 +1180,10 @@
       b.addEventListener('click', closeMiniCart);
     });
 
-    var body = $('.gh-drawer-cart-body', drawer);
-    body.addEventListener('click', function (e) {
+    // Bind on the whole drawer (not just .gh-drawer-cart-body): the
+    // "Checkout" button lives in .gh-drawer-cart-foot, which is a sibling
+    // of the body, so clicks there never reached a handler bound to the body.
+    drawer.addEventListener('click', function (e) {
       var stepBtn = e.target.closest('[data-gh-cart-step]');
       if (stepBtn) {
         var itemEl = stepBtn.closest('[data-cart-item]');
@@ -1249,7 +1372,7 @@
       });
     }
 
-    ghFetchJSON(API + '/api/categories')
+    ghFetchJSON(API + '/api/categories/all')
       .then(function (data) {
         productsPage.cats = data.categories || [];
         renderChips();
@@ -1384,9 +1507,10 @@
     bindThemeToggle();
     bindHeaderScroll();
     bindDrawer();
-    fillMegaCategories();
     buildHeroSlides();
+    loadHomeBanners();
     renderCategories();
+    initCategoryCarousel();
     loadPopularPlants();
     loadOffers();
     startSaleTimer();

@@ -65,9 +65,10 @@ const registerUser = async (req, res) => {
       });
     }
 
+    console.error("[register] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -118,9 +119,10 @@ const loginUser = async (req, res) => {
       user: sanitizeUser(user),
     });
   } catch (error) {
+    console.error("[login] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -142,9 +144,10 @@ const getProfile = async (req, res) => {
       user: sanitizeUser(user),
     });
   } catch (error) {
+    console.error("[getProfile] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -199,9 +202,10 @@ const updateProfile = async (req, res) => {
       });
     }
 
+    console.error("[updateProfile] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };

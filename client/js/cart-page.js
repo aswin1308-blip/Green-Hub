@@ -9,6 +9,11 @@
   const summary = document.getElementById("cart-summary");
   if (!tbody) return;
 
+  // Must mirror server/controllers/orderController.js pricing rules
+  const DELIVERY_FEE = 50;
+  const FREE_DELIVERY_MIN = 499;
+  const GST_RATE = 0.05;
+
   const loggedIn = ghIsLoggedIn();
   const guestItems = ghGetGuestCart();
 
@@ -89,11 +94,20 @@
     totalTd.textContent = ghMoney(ghItemPrice(item.product) * item.quantity);
 
     const actionTd = document.createElement("td");
+    const btnWrap = document.createElement("div");
+    btnWrap.className = "cart-actions";
+    const wishlistBtn = document.createElement("button");
+    wishlistBtn.type = "button";
+    wishlistBtn.textContent = "Move to Wishlist";
+    wishlistBtn.dataset.cartWishlist = item.id;
+    wishlistBtn.dataset.cartProductId =
+      (item.product && (item.product._id || item.product.productId)) || "";
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.textContent = "Remove";
     removeBtn.dataset.cartId = item.id;
-    actionTd.appendChild(removeBtn);
+    btnWrap.append(wishlistBtn, removeBtn);
+    actionTd.appendChild(btnWrap);
 
     tr.append(name, imgTd, priceTd, qtyTd, totalTd, actionTd);
     return tr;
@@ -130,6 +144,10 @@
       0
     );
 
+    const delivery = subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE;
+    const tax = Math.round(subtotal * GST_RATE);
+    const total = subtotal + delivery + tax;
+
     summary.innerHTML = "";
 
     const p1 = document.createElement("p");
@@ -139,12 +157,19 @@
     p2.innerHTML = "Subtotal : " + ghMoney(subtotal);
 
     const p3 = document.createElement("p");
-    p3.innerHTML = "Delivery : " + ghMoney(50);
+    p3.innerHTML = "Delivery : " +
+      (delivery === 0
+        ? "<strong>FREE</strong>"
+        : ghMoney(delivery) +
+          " <small>(Free above " + ghMoney(FREE_DELIVERY_MIN) + ")</small>");
+
+    const p4 = document.createElement("p");
+    p4.innerHTML = "GST (" + Math.round(GST_RATE * 100) + "%) : " + ghMoney(tax);
 
     const rule = document.createElement("hr");
 
     const h3 = document.createElement("h3");
-    h3.innerHTML = "Total : " + ghMoney(subtotal + 50);
+    h3.innerHTML = "Total : " + ghMoney(total);
 
     const link = document.createElement("a");
     link.href = "checkout.html";
@@ -153,7 +178,7 @@
     checkoutBtn.textContent = "Proceed to Checkout";
     link.appendChild(checkoutBtn);
 
-    summary.append(p1, p2, p3, rule, h3, link);
+    summary.append(p1, p2, p3, p4, rule, h3, link);
   }
 
   tbody.addEventListener("change", async function (event) {
@@ -188,6 +213,43 @@
   });
 
   tbody.addEventListener("click", async function (event) {
+    const wishBtn = event.target.closest("button[data-cart-wishlist]");
+    if (wishBtn) {
+      const cartId = wishBtn.dataset.cartWishlist;
+      const productId = wishBtn.dataset.cartProductId;
+
+      try {
+        await ghAddToWishlist(productId);
+      } catch (error) {
+        console.error("Failed to move to wishlist:", error);
+        if (typeof showToast === "function") {
+          showToast(error.message || "Could not add to wishlist.");
+        }
+        return;
+      }
+
+      try {
+        if (mode === "server") {
+          await ghApiRequest("/api/cart/" + encodeURIComponent(cartId), {
+            method: "DELETE",
+          });
+        } else {
+          ghSaveGuestCart(
+            ghGetGuestCart().filter((item) => item.productId !== cartId)
+          );
+        }
+      } catch (error) {
+        console.error("Failed to remove from cart:", error);
+      }
+
+      if (typeof showToast === "function") {
+        showToast("Moved to Wishlist");
+      }
+      render();
+      ghRefreshCartBadge();
+      return;
+    }
+
     const btn = event.target.closest("button[data-cart-id]");
     if (!btn) return;
 

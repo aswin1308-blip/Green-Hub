@@ -1,0 +1,89 @@
+.banners-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.banners-total {
+  margin: 0;
+  margin-right: auto;
+  font-size: 14px;
+}
+
+.banner-thumb {
+  width: 64px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.banner-thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--green-100);
+  color: var(--green-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.order-arrows {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-arrows .banner-order {
+  min-width: 34px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-700);
+}
+
+.order-arrows .btn-sm {
+  padding: 2px 8px;
+  line-height: 1.2;
+}
+
+.toggle-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle .toggle-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s ease;
+}
+
+.toggle.toggle-on {
+  background: var(--green-600);
+}
+
+.toggle.toggle-on .toggle-knob {
+  transform: translateX(16px);
+}

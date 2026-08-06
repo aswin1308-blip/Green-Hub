@@ -3,6 +3,7 @@ const Category = require("../models/Category");
 const mongoose = require("mongoose");
 const slugify = require("../utils/slugify");
 const imageUrl = require("../utils/imageUrl");
+const { destroyImage } = require("../utils/cloudinary");
 
 const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -39,7 +40,9 @@ const resolveCategoryId = async (value) => {
   return category ? category._id : null;
 };
 
-// Public: list products with filters + pagination
+// Public: list ACTIVE products with filters + pagination.
+// The public storefront must never expose inactive products — the
+// status filter is only available through the admin endpoint below.
 const getProducts = async (req, res, next) => {
   try {
     const {
@@ -47,12 +50,11 @@ const getProducts = async (req, res, next) => {
       search,
       minPrice,
       maxPrice,
-      status,
       page = 1,
       limit = 20,
     } = req.query;
 
-    const filter = {};
+    const filter = { status: "active" };
 
     if (category) {
       const categoryId = await resolveCategoryId(category);
@@ -83,7 +85,65 @@ const getProducts = async (req, res, next) => {
       if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
     }
 
-    if (status !== undefined) filter.status = status;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+    const skip = (pageNum - 1) * pageSize;
+
+    const [total, products] = await Promise.all([
+      Product.countDocuments(filter),
+      Product.find(filter)
+        .populate("category", "name slug")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(pageSize),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      total,
+      page: pageNum,
+      pages: Math.ceil(total / pageSize) || 0,
+      products,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin: list products including inactive, with optional status filter
+const getAdminProducts = async (req, res, next) => {
+  try {
+    const { category, search, status, page = 1, limit = 20 } = req.query;
+
+    const filter = {};
+
+    if (category) {
+      const categoryId = await resolveCategoryId(category);
+      if (!categoryId) {
+        return res.status(200).json({
+          success: true,
+          count: 0,
+          total: 0,
+          page: Number(page),
+          pages: 0,
+          products: [],
+        });
+      }
+      filter.category = categoryId;
+    }
+
+    if (search) {
+      const keyword = escapeRegex(search.trim());
+      filter.$or = [
+        { name: { $regex: keyword, $options: "i" } },
+        { description: { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    if (status !== undefined && status !== "all" && status !== "") {
+      filter.status = status;
+    }
 
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const pageSize = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
@@ -111,7 +171,7 @@ const getProducts = async (req, res, next) => {
   }
 };
 
-// Public: get single product (by id or slug)
+// Public: get single product (by id or slug) — inactive products are hidden
 const getProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -119,6 +179,8 @@ const getProduct = async (req, res, next) => {
     const query = isObjectId(id)
       ? { _id: id }
       : { slug: id.toLowerCase() };
+
+    query.status = "active";
 
     const product = await Product.findOne(query).populate(
       "category",
@@ -244,7 +306,16 @@ const updateProduct = async (req, res, next) => {
     );
 
     if (hasImagesField) {
+      const previousImages = new Set(product.images || []);
+      const keptImages = new Set(cleanDesiredImages);
       product.images = [...cleanDesiredImages, ...uploadedImages];
+
+      // Clean up Cloudinary assets that were removed in this edit
+      previousImages.forEach((img) => {
+        if (!keptImages.has(img) && !uploadedImages.includes(img)) {
+          destroyImage(img);
+        }
+      });
     } else if (uploadedImages.length > 0) {
       product.images = [...product.images, ...uploadedImages];
     }
@@ -272,6 +343,8 @@ const deleteProduct = async (req, res, next) => {
         message: "Product not found",
       });
     }
+
+    (product.images || []).forEach((img) => destroyImage(img));
 
     await product.deleteOne();
 
@@ -316,6 +389,7 @@ const updateStock = async (req, res, next) => {
 
 module.exports = {
   getProducts,
+  getAdminProducts,
   getProduct,
   createProduct,
   updateProduct,

@@ -3,7 +3,11 @@
         Dynamic storefront loading
 ========================================== */
 
-const GH_API_BASE = "http://localhost:5000";
+// Configurable API base — a window.GH_API_BASE set before this script
+// wins (mirrors the pattern used by premium.js and the other scripts).
+const GH_API_BASE =
+  (typeof window !== "undefined" && window.GH_API_BASE) ||
+  "http://localhost:5000";
 
 const ghProductCache = new Map();
 

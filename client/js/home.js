@@ -5,6 +5,12 @@
 
 const GH_SLIDESHOW_DELAY = 4500;
 
+// Configurable API base (mirrors products.js) — declared here so home.js
+// never silently depends on another script's global.
+const GH_API_BASE =
+  (typeof window !== "undefined" && window.GH_API_BASE) ||
+  "http://localhost:5000";
+
 /* ---------- hero slideshow ---------- */
 
 function ghBuildHeroSlides() {

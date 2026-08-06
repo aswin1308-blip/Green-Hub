@@ -27,6 +27,9 @@ export default function Categories() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
+  const [showOnHomepage, setShowOnHomepage] = useState(true);
+  const [showInNavDropdown, setShowInNavDropdown] = useState(false);
+  const [navGroup, setNavGroup] = useState("");
   const [imageFile, setImageFile] = useState(null);
   const [existingImage, setExistingImage] = useState("");
 
@@ -52,6 +55,9 @@ export default function Categories() {
     setName("");
     setSlug("");
     setDescription("");
+    setShowOnHomepage(true);
+    setShowInNavDropdown(false);
+    setNavGroup("");
     setImageFile(null);
     setExistingImage("");
     setFormOpen(true);
@@ -63,6 +69,9 @@ export default function Categories() {
     setName(category.name || "");
     setSlug(category.slug || "");
     setDescription(category.description || "");
+    setShowOnHomepage(category.showOnHomepage !== false);
+    setShowInNavDropdown(category.showInNavDropdown === true);
+    setNavGroup(category.navGroup || "");
     setImageFile(null);
     setExistingImage(category.image || "");
     setFormOpen(true);
@@ -91,6 +100,9 @@ export default function Categories() {
     fd.append("name", name.trim());
     if (slug.trim()) fd.append("slug", slug.trim());
     fd.append("description", description.trim());
+    fd.append("showOnHomepage", String(showOnHomepage));
+    fd.append("showInNavDropdown", String(showInNavDropdown));
+    fd.append("navGroup", showInNavDropdown ? navGroup : "");
     if (imageFile) fd.append("image", imageFile, imageFile.name);
 
     setSubmitting(true);
@@ -164,6 +176,16 @@ export default function Categories() {
                 <div className="category-body">
                   <h3 className="category-name">{c.name}</h3>
                   <span className="category-slug muted">{c.slug}</span>
+                  <div className="category-flags">
+                    {c.showOnHomepage !== false && (
+                      <span className="cat-flag">Home</span>
+                    )}
+                    {c.showInNavDropdown && (
+                      <span className="cat-flag cat-flag-nav">
+                        Nav · {c.navGroup || "Other"}
+                      </span>
+                    )}
+                  </div>
                   <p className="category-desc">
                     {c.description || "No description"}
                   </p>
@@ -230,6 +252,45 @@ export default function Categories() {
                 placeholder="Short category description"
                 rows="3"
               />
+            </div>
+
+            <div className="field field-full">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={showOnHomepage}
+                  onChange={(e) => setShowOnHomepage(e.target.checked)}
+                />
+                Show on homepage (Shop by Category circles)
+              </label>
+            </div>
+
+            <div className="field field-full">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={showInNavDropdown}
+                  onChange={(e) => setShowInNavDropdown(e.target.checked)}
+                />
+                Show in navbar dropdown
+              </label>
+            </div>
+
+            <div className="field field-full">
+              <label htmlFor="cf-navgroup">Nav menu group</label>
+              <select
+                id="cf-navgroup"
+                value={navGroup}
+                disabled={!showInNavDropdown}
+                onChange={(e) => setNavGroup(e.target.value)}
+              >
+                <option value="">-- Select menu --</option>
+                <option value="Plants">Plants</option>
+                <option value="Pot Plants">Pot Plants</option>
+                <option value="Bulbs & Seeds">Bulbs &amp; Seeds</option>
+                <option value="Planters">Planters</option>
+                <option value="Gardening Kit">Gardening Kit</option>
+              </select>
             </div>
 
             <div className="field field-full">

@@ -1,14 +1,29 @@
 const Wishlist = require("../models/Wishlist");
+const Product = require("../models/Product");
+const mongoose = require("mongoose");
+
+const isObjectId = (value) =>
+  mongoose.Types.ObjectId.isValid(value) &&
+  String(new mongoose.Types.ObjectId(value)) === value;
 
 // Add to Wishlist (protected - uses logged-in user from JWT)
 const addToWishlist = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    if (!productId) {
+    if (!productId || !isObjectId(productId)) {
       return res.status(400).json({
         success: false,
-        message: "productId is required",
+        message: "Invalid product selected",
+      });
+    }
+
+    const product = await Product.findById(productId);
+
+    if (!product || product.status !== "active") {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found or no longer available",
       });
     }
 
@@ -36,9 +51,10 @@ const addToWishlist = async (req, res) => {
       wishlist: item,
     });
   } catch (error) {
+    console.error("[addToWishlist] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -55,9 +71,10 @@ const getWishlist = async (req, res) => {
       wishlist,
     });
   } catch (error) {
+    console.error("[getWishlist] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -82,9 +99,10 @@ const removeFromWishlist = async (req, res) => {
       message: "Removed from Wishlist",
     });
   } catch (error) {
+    console.error("[removeFromWishlist] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };

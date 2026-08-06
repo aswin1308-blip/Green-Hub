@@ -63,6 +63,40 @@
   white-space: pre-wrap;
 }
 
+.category-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.cat-flag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--green-100, #d1fae5);
+  color: var(--green-700, #047857);
+}
+
+.cat-flag-nav {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
 .category-card .row-actions {
   padding: 12px;
   border-top: 1px solid var(--line);

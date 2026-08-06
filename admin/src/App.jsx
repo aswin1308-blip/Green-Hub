@@ -8,6 +8,7 @@ import Categories from "./pages/Categories.jsx";
 import Orders from "./pages/Orders.jsx";
 import Customers from "./pages/Customers.jsx";
 import Coupons from "./pages/Coupons.jsx";
+import Banners from "./pages/Banners.jsx";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="customers" element={<Customers />} />
           <Route path="coupons" element={<Coupons />} />
+          <Route path="banners" element={<Banners />} />
         </Route>
       </Route>
 

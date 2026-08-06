@@ -60,9 +60,23 @@ function showToast(message){
 
 function updateCartCount(count){
 
-    const icon=document.querySelector(".fa-cart-shopping");
+    const value = Number(count) || 0;
 
-    if(!icon) return;
+    const legacyIcon = document.querySelector(".icons .fa-cart-shopping");
+
+    if(!legacyIcon) {
+
+        document.querySelectorAll(".gh-cart-badge").forEach(badge => {
+
+            badge.textContent = value > 99 ? "99+" : String(value);
+
+            badge.classList.toggle("gh-show", value > 0);
+
+        });
+
+        return;
+
+    }
 
     let badge=document.querySelector(".cart-badge");
 
@@ -85,20 +99,17 @@ function updateCartCount(count){
         badge.style.alignItems="center";
         badge.style.justifyContent="center";
 
-        icon.parentElement.style.position="relative";
+        legacyIcon.parentElement.style.position="relative";
 
-        icon.parentElement.appendChild(badge);
+        legacyIcon.parentElement.appendChild(badge);
 
     }
-
-    const value = Number(count) || 0;
 
     badge.innerText = value;
 
     badge.style.display = value > 0 ? "flex" : "none";
 
 }
-
 /* ==========================================
         CART BUTTONS (handled centrally in cart.js)
 ========================================== */
@@ -979,19 +990,23 @@ window.addEventListener("load", () => {
 /* ==========================================
         ACTIVE NAVIGATION
 ========================================== */
-
 const currentPage = window.location.pathname.split("/").pop();
 
-document.querySelectorAll("nav a").forEach(link => {
+if (!document.querySelector(".gh-nav")) {
 
-    if (link.getAttribute("href") === currentPage) {
+    document.querySelectorAll("nav a").forEach(link => {
 
-        link.style.color = "#8bc34a";
-        link.style.fontWeight = "bold";
+        if (link.getAttribute("href") === currentPage) {
 
-    }
+            link.style.color = "#8bc34a";
 
-});
+            link.style.fontWeight = "bold";
+
+        }
+
+    });
+
+}
 
 /* ==========================================
         IMAGE ZOOM

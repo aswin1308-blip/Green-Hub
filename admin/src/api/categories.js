@@ -1,7 +1,7 @@
 import { api } from "../api.js";
 
 export function getCategories() {
-  return api("/categories");
+  return api("/admin/categories");
 }
 
 export function createCategory(formData) {

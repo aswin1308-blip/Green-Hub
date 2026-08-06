@@ -1,18 +1,35 @@
 const Cart = require("../models/Cart");
+const Product = require("../models/Product");
+const mongoose = require("mongoose");
+
+const MAX_QTY = 99;
+
+const isObjectId = (value) =>
+  mongoose.Types.ObjectId.isValid(value) &&
+  String(new mongoose.Types.ObjectId(value)) === value;
 
 // Add to Cart (protected - uses logged-in user from JWT)
 const addToCart = async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
 
-    if (!productId) {
+    if (!productId || !isObjectId(productId)) {
       return res.status(400).json({
         success: false,
-        message: "productId is required",
+        message: "Invalid product selected",
       });
     }
 
-    const qty = Math.max(1, parseInt(quantity, 10) || 1);
+    const product = await Product.findById(productId);
+
+    if (!product || product.status !== "active") {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found or no longer available",
+      });
+    }
+
+    const qty = Math.min(MAX_QTY, Math.max(1, parseInt(quantity, 10) || 1));
 
     const existing = await Cart.findOne({
       user: req.user._id,
@@ -21,7 +38,7 @@ const addToCart = async (req, res) => {
 
     let cart;
     if (existing) {
-      existing.quantity += qty;
+      existing.quantity = Math.min(MAX_QTY, existing.quantity + qty);
       cart = await existing.save();
     } else {
       cart = await Cart.create({
@@ -37,9 +54,10 @@ const addToCart = async (req, res) => {
       cart,
     });
   } catch (error) {
+    console.error("[addToCart] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -54,9 +72,10 @@ const getCart = async (req, res) => {
       cart,
     });
   } catch (error) {
+    console.error("[getCart] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -66,16 +85,18 @@ const updateCart = async (req, res) => {
   try {
     const { quantity } = req.body;
 
-    if (!quantity || parseInt(quantity, 10) < 1) {
+    if (parseInt(quantity, 10) < 1 || Number.isNaN(parseInt(quantity, 10))) {
       return res.status(400).json({
         success: false,
         message: "Quantity must be at least 1",
       });
     }
 
+    const qty = Math.min(MAX_QTY, parseInt(quantity, 10));
+
     const cart = await Cart.findOneAndUpdate(
       { _id: req.params.id, user: req.user._id },
-      { quantity: parseInt(quantity, 10) },
+      { quantity: qty },
       { new: true }
     );
 
@@ -92,9 +113,10 @@ const updateCart = async (req, res) => {
       cart,
     });
   } catch (error) {
+    console.error("[updateCart] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };
@@ -119,9 +141,10 @@ const removeCart = async (req, res) => {
       message: "Item Removed",
     });
   } catch (error) {
+    console.error("[removeCart] error:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Something went wrong. Please try again.",
     });
   }
 };

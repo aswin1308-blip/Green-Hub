@@ -1,4 +1,5 @@
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 
 const buildOrderQuery = (req) => {
   const { status, from, to, customer, search } = req.query;
@@ -100,8 +101,21 @@ const updateOrderStatus = async (req, res, next) => {
       });
     }
 
+    const wasNotCancelled = order.status !== "Cancelled";
     order.status = req.body.status;
     await order.save();
+
+    // Restore stock exactly once when an order moves to Cancelled
+    if (wasNotCancelled && order.status === "Cancelled") {
+      await Promise.all(
+        order.products.map((item) =>
+          Product.updateOne(
+            { _id: item.productId },
+            { $inc: { stock: item.quantity } }
+          )
+        )
+      );
+    }
 
     res.status(200).json({
       success: true,

@@ -38,6 +38,13 @@ const errorHandler = (err, req, res, next) => {
     message = "Invalid JSON in request body";
   }
 
+  // Never leak internal details. Unknown/unexpected errors become a
+  // generic message; the real error is logged server-side only.
+  if (status >= 500) {
+    console.error(`[API error] ${req.method} ${req.originalUrl}:`, err);
+    message = "Something went wrong. Please try again later.";
+  }
+
   res.status(status).json({
     success: false,
     message,

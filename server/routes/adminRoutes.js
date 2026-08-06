@@ -12,6 +12,7 @@ const adminOrderController = require("../controllers/adminOrderController");
 const adminCustomerController = require("../controllers/adminCustomerController");
 const adminDashboardController = require("../controllers/adminDashboardController");
 const couponController = require("../controllers/couponController");
+const bannerController = require("../controllers/bannerController");
 
 const router = express.Router();
 
@@ -21,6 +22,23 @@ router.use(protect);
 router.use(adminOnly);
 
 // ---- Categories ----
+const NAV_GROUPS = ["Plants", "Pot Plants", "Bulbs & Seeds", "Planters", "Gardening Kit"];
+
+const categoryVisibilityRules = [
+  body("showOnHomepage").optional().isBoolean()
+    .withMessage("showOnHomepage must be a boolean"),
+  body("showInNavDropdown").optional().isBoolean()
+    .withMessage("showInNavDropdown must be a boolean"),
+  body("navGroup").optional().trim().custom((value) => {
+    if (value !== "" && !NAV_GROUPS.includes(value)) {
+      throw new Error(`navGroup must be one of: ${NAV_GROUPS.join(", ")}`);
+    }
+    return true;
+  }),
+];
+
+router.get("/categories", categoryController.getAllCategories);
+
 router.post(
   "/categories",
   upload.single("image"),
@@ -31,7 +49,7 @@ router.post(
       .withMessage("Slug must be lowercase with hyphens"),
     body("description").optional().isString(),
     body("image").optional().isString(),
-  ],
+  ].concat(categoryVisibilityRules),
   validate,
   categoryController.createCategory
 );
@@ -47,7 +65,7 @@ router.put(
       .withMessage("Slug must be lowercase with hyphens"),
     body("description").optional().isString(),
     body("image").optional().isString(),
-  ],
+  ].concat(categoryVisibilityRules),
   validate,
   categoryController.updateCategory
 );
@@ -87,6 +105,8 @@ const productUpdateRules = [
   body("status").optional().isIn(["active", "inactive"]),
   body("slug").optional().trim().matches(slugPattern),
 ];
+
+router.get("/products", productController.getAdminProducts);
 
 router.post(
   "/products",
@@ -214,6 +234,52 @@ router.delete(
   [check("id").isMongoId().withMessage("Invalid coupon id")],
   validate,
   couponController.deleteCoupon
+);
+
+// ---- Banners ----
+router.get("/banners", bannerController.getBanners);
+
+router.post(
+  "/banners",
+  upload.single("image"),
+  [
+    body("order").optional().toInt().isInt({ min: 0 })
+      .withMessage("Order must be 0 or greater"),
+    body("isActive").optional().isBoolean()
+      .withMessage("isActive must be a boolean"),
+  ],
+  validate,
+  bannerController.createBanner
+);
+
+// NOTE: must be registered before PATCH /banners/:id so "reorder"
+// is not matched as an id.
+router.patch(
+  "/banners/reorder",
+  [body("ids").isArray().withMessage("ids must be an array")],
+  validate,
+  bannerController.reorderBanners
+);
+
+router.patch(
+  "/banners/:id",
+  upload.single("image"),
+  [
+    check("id").isMongoId().withMessage("Invalid banner id"),
+    body("order").optional().toInt().isInt({ min: 0 })
+      .withMessage("Order must be 0 or greater"),
+    body("isActive").optional().isBoolean()
+      .withMessage("isActive must be a boolean"),
+  ],
+  validate,
+  bannerController.updateBanner
+);
+
+router.delete(
+  "/banners/:id",
+  [check("id").isMongoId().withMessage("Invalid banner id")],
+  validate,
+  bannerController.deleteBanner
 );
 
 module.exports = router;

@@ -32,6 +32,22 @@ const categorySchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    showOnHomepage: {
+      type: Boolean,
+      default: true,
+    },
+
+    showInNavDropdown: {
+      type: Boolean,
+      default: false,
+    },
+
+    navGroup: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   {
     timestamps: true,

@@ -5,7 +5,7 @@ const cors = require("cors");
 
 // MUST run before any require() that reads process.env
 // (e.g. middleware/upload.js checks CLOUDINARY_* at load time)
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, ".env") });
 
 const paymentRoutes = require("./routes/paymentRoutes");
 const orderRoutes = require("./routes/orderRoutes");
@@ -14,6 +14,7 @@ const cartRoutes = require("./routes/cartRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const bannerRoutes = require("./routes/bannerRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 
 const connectDB = require("./config/db");
@@ -38,6 +39,7 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/banners", bannerRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);

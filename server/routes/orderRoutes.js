@@ -16,8 +16,6 @@ router.post("/", protect, placeOrder);
 
 router.get("/mine", protect, getMyOrders);
 
-router.get("/", protect, getMyOrders);
-
 router.get("/:id", protect, getOrder);
 
 router.put("/:id", protect, updateOrder);

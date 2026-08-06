@@ -7,7 +7,7 @@ export async function getProducts({ category, search, page = 1, limit = 10, stat
   if (status) params.set("status", status);
   params.set("page", String(page));
   params.set("limit", String(limit));
-  return api(`/products?${params.toString()}`);
+  return api(`/admin/products?${params.toString()}`);
 }
 
 export function createProduct(formData) {

@@ -291,24 +291,46 @@
 
     setPlaceBusy(true);
 
-    window.ghApiRequest('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customerName: form.name,
-        customerEmail: form.email,
-        customerPhone: form.phone,
-        customerAddress: form.address,
-        products: products,
-        subtotal: subtotal,
-        deliveryCharge: delivery,
-        tax: tax,
-        discount: discount,
-        couponCode: appliedCoupon ? appliedCoupon.code : '',
-        total: total,
-        paymentMethod: getPaymentMethod(),
-      }),
-    })
+    var isOnlinePayment = getPaymentMethod() !== 'Cash on Delivery';
+
+    // For online methods, run the Razorpay checkout first. If the user
+    // cancels or the payment fails, we abort and keep the cart intact.
+    var payStep;
+    try {
+      payStep = isOnlinePayment
+        ? window.ghRazorpayCheckout(total, { name: form.name, email: form.email, phone: form.phone })
+        : Promise.resolve({ success: true, paymentId: '' });
+    } catch (err) {
+      console.error('Failed to start payment:', err);
+      setPlaceBusy(false);
+      toast((err && err.message) || 'Could not start payment. Please try again.', true);
+      return;
+    }
+
+    payStep
+      .then(function (payRes) {
+        if (!payRes.success) throw new Error(payRes.error || 'Payment was not completed');
+
+        return window.ghApiRequest('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerName: form.name,
+            customerEmail: form.email,
+            customerPhone: form.phone,
+            customerAddress: form.address,
+            products: products,
+            subtotal: subtotal,
+            deliveryCharge: delivery,
+            tax: tax,
+            discount: discount,
+            couponCode: appliedCoupon ? appliedCoupon.code : '',
+            total: total,
+            paymentMethod: getPaymentMethod(),
+            razorpayPaymentId: payRes.paymentId || '',
+          }),
+        });
+      })
       .then(function (data) {
         var order = (data && data.order) || {};
         return clearCart().then(function () {
