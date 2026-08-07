@@ -35,9 +35,11 @@
     const tr = document.createElement("tr");
 
     const name = document.createElement("td");
+    name.dataset.label = "Plant";
     name.textContent = product.name || "Product";
 
     const imgTd = document.createElement("td");
+    imgTd.dataset.label = "Image";
     const img = document.createElement("img");
     const images =
       product.images && product.images.length
@@ -50,19 +52,23 @@
     imgTd.appendChild(img);
 
     const priceTd = document.createElement("td");
+    priceTd.dataset.label = "Price";
     priceTd.textContent = ghMoney(
       Number(product.discountPrice) || Number(product.price) || 0
     );
 
     const actionTd = document.createElement("td");
+    actionTd.dataset.label = "Action";
 
     const addBtn = document.createElement("button");
     addBtn.type = "button";
+    addBtn.className = "gh-btn gh-btn--outline gh-btn--sm";
     addBtn.textContent = "Add to Cart";
     addBtn.dataset.addCart = product._id || "";
 
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
+    removeBtn.className = "gh-btn gh-btn--outline gh-btn--sm gh-cart-remove-btn";
     removeBtn.textContent = "Remove";
     removeBtn.dataset.removeWish = product._id || "";
 

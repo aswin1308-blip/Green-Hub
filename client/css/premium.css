@@ -4608,3 +4608,282 @@ textarea {
   border-color: #dc2626;
   color: #fca5a5;
 }
+
+/* =========================================================
+   LEGACY PAGES (cart / orders / wishlist) SHARING THE
+   PREMIUM HEADER - neutralise style.css element-level leaks
+   and make the legacy tables fully responsive.
+   premium.css loads AFTER style.css on those pages, so these
+   rules win the cascade.
+   ========================================================= */
+
+/* style.css gives every button 12px 28px padding; combined with
+   flex min-width:auto that inflates icon chips to 56px+ and
+   clips the cart badge - zero them out on premium controls. */
+.gh-icon-btn,
+.gh-hamburger,
+.gh-modal-close,
+.gh-drawer-close,
+.gh-backtop,
+.gh-search-clear,
+.gh-search-close,
+.gh-wish-btn,
+.gh-qty button {
+  padding: 0;
+}
+
+.gh-cart-remove {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+/* same min-content inflation hits the qty input (style.css input padding) */
+.gh-qty input {
+  padding: 0;
+  height: 46px;
+}
+
+/* ---- legacy page sections: premium container + typography ---- */
+.cart,
+.orders,
+.summary,
+.recommend {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: 48px 16px;
+}
+
+.cart {
+  background: transparent;
+}
+
+.cart h1,
+.orders h1 {
+  font-size: 30px;
+  color: var(--gh-text);
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.orders > p {
+  color: var(--gh-grey);
+}
+
+.cart h2,
+.orders h2,
+.summary h2,
+.recommend h2 {
+  font-size: 26px;
+  color: var(--gh-text);
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.summary {
+  background: transparent;
+  padding: 40px 16px;
+}
+
+.summary-box {
+  padding: 26px;
+  border-radius: 16px;
+}
+
+.recommend {
+  padding: 40px 16px;
+}
+
+.recommend .product-container {
+  gap: 22px;
+}
+
+/* ---- legacy tables: premium look + mobile cards ---- */
+.cart table,
+.orders table,
+#wishlist-table {
+  width: 100%;
+  border: 0;
+  border-collapse: collapse;
+  background: var(--gh-card);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+}
+
+.cart table th,
+.orders table th,
+#wishlist-table th {
+  background: var(--gh-primary);
+  color: #fff;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 14px 16px;
+}
+
+.cart table td,
+.orders table td,
+#wishlist-table td {
+  border: 0;
+  border-bottom: 1px solid var(--gh-border);
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.cart table tr:last-child td,
+.orders table tr:last-child td,
+#wishlist-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.cart table img,
+#wishlist-table img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.cart .cart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.gh-cart-remove-btn {
+  color: var(--gh-danger) !important;
+  border-color: var(--gh-danger) !important;
+}
+
+.gh-cart-remove-btn:hover {
+  background: var(--gh-danger) !important;
+  color: #fff !important;
+}
+
+#cart-summary {
+  max-width: 640px;
+  margin-inline: auto;
+  background: var(--gh-card);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+  padding: 26px;
+}
+
+#cart-summary p,
+#cart-summary h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+#cart-summary hr {
+  border: 0;
+  border-top: 1px dashed var(--gh-border);
+  margin: 14px 0;
+}
+
+#cart-summary .gh-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.orders .summary-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+/* ---- mobile: stacked card layout for the legacy tables ---- */
+@media (max-width: 767px) {
+  .cart table,
+  .orders table,
+  #wishlist-table {
+    display: block;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .cart table > tr:first-child,
+  .orders table > tr:first-child,
+  #wishlist-table > tr:first-child {
+    display: none;
+  }
+
+  .cart table tbody,
+  .orders table tbody,
+  #wishlist-table tbody {
+    display: block;
+  }
+
+  .cart table tbody tr,
+  .orders table tbody tr,
+  #wishlist-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 14px;
+    background: var(--gh-card);
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+
+  .cart table td,
+  .orders table td,
+  #wishlist-table td {
+    display: block;
+    padding: 6px 0;
+    border: 0;
+  }
+
+  .cart table td::before,
+  .orders table td::before,
+  #wishlist-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--gh-grey);
+    margin-bottom: 4px;
+  }
+
+  .cart table td[colspan],
+  .orders table td[colspan],
+  #wishlist-table td[colspan] {
+    grid-column: 1 / -1;
+  }
+
+  .cart table td[colspan]::before,
+  .orders table td[colspan]::before,
+  #wishlist-table td[colspan]::before {
+    content: none;
+  }
+
+  .cart table td:last-child,
+  .orders table td:last-child,
+  #wishlist-table td:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .cart .cart-actions {
+    justify-content: flex-start;
+  }
+
+  .cart .cart-actions .gh-btn,
+  #wishlist-table .cart-actions .gh-btn,
+  #wishlist-table td .gh-btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* ---- hero: taller crop on small screens so banner art isnt cut ---- */
+@media (max-width: 480px) {
+  .gh-hero {
+    aspect-ratio: 16 / 10;
+  }
+}

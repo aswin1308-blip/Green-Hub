@@ -149,9 +149,11 @@
     const tr = document.createElement("tr");
 
     const name = document.createElement("td");
+    name.dataset.label = "Plant";
     name.textContent = (item.product && item.product.name) || "Product";
 
     const imgTd = document.createElement("td");
+    imgTd.dataset.label = "Image";
     const img = document.createElement("img");
     const images = item.product && item.product.images && item.product.images.length
       ? item.product.images
@@ -163,16 +165,35 @@
     imgTd.appendChild(img);
 
     const priceTd = document.createElement("td");
+    priceTd.dataset.label = "Price";
     priceTd.textContent = ghMoney(ghItemPrice(item.product));
 
     const qtyTd = document.createElement("td");
+    qtyTd.dataset.label = "Quantity";
+    const qtyWrap = document.createElement("div");
+    qtyWrap.className = "gh-qty";
+    const minusBtn = document.createElement("button");
+    minusBtn.type = "button";
+    minusBtn.textContent = "−";
+    minusBtn.dataset.cartStep = "-1";
+    minusBtn.dataset.cartId = item.id;
+    minusBtn.setAttribute("aria-label", "Decrease quantity");
     const qtyInput = document.createElement("input");
     qtyInput.type = "number";
     qtyInput.value = item.quantity;
     qtyInput.min = 1;
     qtyInput.max = parseInt(item.product && item.product.stock, 10) || 1;
     qtyInput.dataset.cartId = item.id;
-    qtyTd.appendChild(qtyInput);
+    qtyInput.setAttribute("aria-label", "Quantity");
+    const plusBtn = document.createElement("button");
+    plusBtn.type = "button";
+    plusBtn.textContent = "+";
+    plusBtn.dataset.cartStep = "1";
+    plusBtn.dataset.cartId = item.id;
+    plusBtn.setAttribute("aria-label", "Increase quantity");
+    if (item.quantity <= 1) minusBtn.disabled = true;
+    qtyWrap.append(minusBtn, qtyInput, plusBtn);
+    qtyTd.appendChild(qtyWrap);
 
     if (item.note) {
       const note = document.createElement("div");
@@ -184,19 +205,23 @@
 
     const totalTd = document.createElement("td");
     totalTd.className = "row-total";
+    totalTd.dataset.label = "Total";
     totalTd.textContent = ghMoney(ghItemPrice(item.product) * item.quantity);
 
     const actionTd = document.createElement("td");
+    actionTd.dataset.label = "Action";
     const btnWrap = document.createElement("div");
     btnWrap.className = "cart-actions";
     const wishlistBtn = document.createElement("button");
     wishlistBtn.type = "button";
+    wishlistBtn.className = "gh-btn gh-btn--outline gh-btn--sm";
     wishlistBtn.textContent = "Move to Wishlist";
     wishlistBtn.dataset.cartWishlist = item.id;
     wishlistBtn.dataset.cartProductId =
       (item.product && (item.product._id || item.product.productId)) || "";
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
+    removeBtn.className = "gh-btn gh-btn--outline gh-btn--sm gh-cart-remove-btn";
     removeBtn.textContent = "Remove";
     removeBtn.dataset.cartId = item.id;
     btnWrap.append(wishlistBtn, removeBtn);
@@ -216,8 +241,7 @@
       const td = document.createElement("td");
       td.colSpan = 6;
       td.style.textAlign = "center";
-      td.textContent = "Your cart is empty.";
-      tr.appendChild(td);
+      td.textContent = "Your cart is empty.";      tr.appendChild(td);
       tbody.appendChild(tr);
     } else {
       items.forEach((item) => {
@@ -275,6 +299,7 @@
     }
     const checkoutBtn = document.createElement("button");
     checkoutBtn.type = "button";
+    checkoutBtn.className = "gh-btn gh-btn--big";
     checkoutBtn.textContent = "Proceed to Checkout";
     link.appendChild(checkoutBtn);
 
@@ -334,7 +359,7 @@
       }
     } else {
       const cart = ghGetGuestCart();
-      const found = cart.find((item) => item.productId === id);
+      const found = cart.find((item) => String(item.productId) === String(id));
       if (found) {
         found.quantity = qty;
         ghSaveGuestCart(cart);
@@ -347,6 +372,56 @@
   });
 
   tbody.addEventListener("click", async function (event) {
+    const stepBtn = event.target.closest("button[data-cart-step]");
+    if (stepBtn) {
+      const id = stepBtn.dataset.cartId;
+      const item = items.find((i) => String(i.id) === String(id));
+      if (!item) return;
+
+      const delta = parseInt(stepBtn.dataset.cartStep, 10) || 0;
+      const stock = item.product ? parseInt(item.product.stock, 10) || 0 : 0;
+      let qty = item.quantity + delta;
+      if (stock > 0 && qty > stock) {
+        qty = stock;
+        if (typeof showToast === "function") {
+          showToast(
+            'Only ' + stock + ' in stock for "' +
+            (item.product ? item.product.name : "this product") + '".'
+          );
+        }
+      }
+      if (qty < 1) qty = 1;
+      if (qty === item.quantity) return;
+
+      try {
+        if (mode === "server") {
+          await ghApiRequest("/api/cart/" + encodeURIComponent(id), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: qty }),
+          });
+        } else {
+          const cart = ghGetGuestCart();
+          const found = cart.find((i) => String(i.productId) === String(id));
+          if (found) {
+            found.quantity = qty;
+            ghSaveGuestCart(cart);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update quantity:", error);
+        if (typeof showToast === "function") {
+          showToast(error.message || "Could not update quantity.");
+        }
+        return;
+      }
+
+      item.quantity = qty;
+      render();
+      ghRefreshCartBadge();
+      return;
+    }
+
     const wishBtn = event.target.closest("button[data-cart-wishlist]");
     if (wishBtn) {
       const cartId = wishBtn.dataset.cartWishlist;
@@ -397,7 +472,7 @@
         });
       } else {
         ghSaveGuestCart(
-          ghGetGuestCart().filter((item) => item.productId !== id)
+          ghGetGuestCart().filter((item) => String(item.productId) !== String(id))
         );
       }
     } catch (error) {

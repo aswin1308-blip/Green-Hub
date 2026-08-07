@@ -120,6 +120,12 @@ function updateCartCount(count){
 
 document.querySelectorAll("button").forEach(button=>{
 
+// Skip premium components — legacy ripple breaks their rounded chips,
+// clips the cart badge (overflow:hidden) and fights .gh-btn styles.
+if (button.matches(".gh-icon-btn, .gh-hamburger, .gh-modal-close, .gh-drawer-close, .gh-backtop, .gh-theme-toggle, .gh-search-clear, .gh-search-close, .gh-cart-remove, .gh-wish-btn, .gh-qty button, .gh-news-pop-close, .gh-btn")) return;
+
+if (button.closest(".gh-header, .gh-drawer, .gh-drawer-cart, .gh-modal, .gh-qv, .gh-news-pop, .gh-search-overlay")) return;
+
 button.addEventListener("click",function(e){
 
 const circle=document.createElement("span");
@@ -780,6 +786,9 @@ if (searchSection) {
 
 document.querySelectorAll(".icons .fa-heart").forEach(icon => {
 
+    // The premium header/drawer render their own wishlist navigation.
+    if (icon.closest(".gh-header, .gh-drawer, .gh-drawer-cart")) return;
+
     icon.style.cursor = "pointer";
 
     icon.addEventListener("click", function () {
@@ -809,6 +818,9 @@ function ghGoToWishlist() {
 ========================================== */
 
 document.querySelectorAll(".fa-cart-shopping").forEach(icon => {
+
+    // The premium header renders its own cart drawer / navigation.
+    if (icon.closest(".gh-header, .gh-drawer, .gh-drawer-cart")) return;
 
     icon.style.cursor = "pointer";
 
@@ -1015,6 +1027,8 @@ if (!document.querySelector(".gh-nav")) {
 document.querySelectorAll("img").forEach(img => {
 
     if (img.hasAttribute("data-nozoom")) return;
+
+    if (img.closest(".gh-header, .gh-drawer, .gh-drawer-cart, .gh-modal, .gh-qv, .gh-news-pop, .gh-footer")) return;
 
     img.style.cursor = "pointer";
 
@@ -1256,13 +1270,19 @@ if(ordersTableBody){
 
             const idTd=document.createElement("td");
 
+            idTd.dataset.label="Order Number";
+
             idTd.textContent="#"+String(order._id||"").slice(-8).toUpperCase();
 
             const productsTd=document.createElement("td");
 
+            productsTd.dataset.label="Products";
+
             productsTd.textContent=(order.products||[]).map((p)=>p.name||"Product").join(", ");
 
             const qtyTd=document.createElement("td");
+
+            qtyTd.dataset.label="Quantity";
 
             const totalQty=(order.products||[]).reduce((s,p)=>s+(parseInt(p.quantity,10)||0),0);
 
@@ -1270,9 +1290,13 @@ if(ordersTableBody){
 
             const totalTd=document.createElement("td");
 
+            totalTd.dataset.label="Total";
+
             totalTd.textContent=ghMoney(order.total);
 
             const statusTd=document.createElement("td");
+
+            statusTd.dataset.label="Status";
 
             statusTd.textContent=order.status||"Pending";
 
@@ -1280,9 +1304,13 @@ if(ordersTableBody){
 
             const dateTd=document.createElement("td");
 
+            dateTd.dataset.label="Date";
+
             dateTd.textContent=new Date(order.createdAt).toLocaleDateString();
 
             const actionTd=document.createElement("td");
+
+            actionTd.dataset.label="Action";
 
             if(order.status==="Pending"){
 
