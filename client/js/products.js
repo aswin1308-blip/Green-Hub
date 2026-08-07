@@ -7,7 +7,7 @@
 // wins (mirrors the pattern used by premium.js and the other scripts).
 const GH_API_BASE =
   (typeof window !== "undefined" && window.GH_API_BASE) ||
-  "http://localhost:5000";
+  "https://greenhub1.onrender.com";
 
 const ghProductCache = new Map();
 

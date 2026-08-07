@@ -61,6 +61,90 @@
     return Number((product && (product.discountPrice || product.price)) || 0);
   }
 
+  /* ---------- stock auto-adjustment ---------- */
+
+  async function persistSetItemQty(item, qty) {
+    if (mode === "server") {
+      try {
+        await ghApiRequest("/api/cart/" + encodeURIComponent(item.id), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity: qty }),
+        });
+      } catch (error) {
+        console.error("Failed to adjust cart quantity:", error);
+      }
+    } else {
+      const cart = ghGetGuestCart();
+      const found = cart.find((x) => String(x.productId) === String(item.id));
+      if (found) {
+        found.quantity = qty;
+        ghSaveGuestCart(cart);
+      }
+    }
+  }
+
+  async function removeCartItem(item) {
+    if (mode === "server") {
+      try {
+        await ghApiRequest("/api/cart/" + encodeURIComponent(item.id), {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error("Failed to remove cart item:", error);
+      }
+    } else {
+      ghSaveGuestCart(
+        ghGetGuestCart().filter((x) => String(x.productId) !== String(item.id))
+      );
+    }
+  }
+
+  // Runs after the cart is loaded AND after every quantity change. Clamps
+  // quantities to available stock, removes unstockable items and keeps the
+  // customer informed with an inline note + toast.
+  async function reconcileStockItems() {
+    let changed = [];
+    const kept = [];
+
+    for (const item of items) {
+      if (!item.product) {
+        await removeCartItem(item);
+        changed.push("A product in your cart is no longer available and was removed.");
+        continue;
+      }
+
+      const available = parseInt(item.product.stock, 10) || 0;
+
+      if (available <= 0) {
+        await removeCartItem(item);
+        changed.push('"' + item.product.name + '" is out of stock and was removed from your cart.');
+        continue;
+      }
+
+      if (item.quantity > available) {
+        item.note =
+          "Only " + available + " in stock — quantity adjusted from " +
+          item.quantity + " to " + available + ".";
+        changed.push(item.note);
+        await persistSetItemQty(item, available);
+        item.quantity = available;
+      } else {
+        item.note = "";
+      }
+
+      kept.push(item);
+    }
+
+    items = kept;
+    if (changed.length) {
+      changed.forEach(function (msg) {
+        if (typeof showToast === "function") showToast(msg);
+      });
+    }
+    return changed.length > 0;
+  }
+
   function buildRow(item) {
     const tr = document.createElement("tr");
 
@@ -86,8 +170,17 @@
     qtyInput.type = "number";
     qtyInput.value = item.quantity;
     qtyInput.min = 1;
+    qtyInput.max = parseInt(item.product && item.product.stock, 10) || 1;
     qtyInput.dataset.cartId = item.id;
     qtyTd.appendChild(qtyInput);
+
+    if (item.note) {
+      const note = document.createElement("div");
+      note.className = "gh-cart-note";
+      note.setAttribute("role", "status");
+      note.textContent = item.note;
+      qtyTd.appendChild(note);
+    }
 
     const totalTd = document.createElement("td");
     totalTd.className = "row-total";
@@ -173,6 +266,13 @@
 
     const link = document.createElement("a");
     link.href = "checkout.html";
+    if (window.ghClearBuyNowItem) {
+      // Going to checkout from the cart page must always show the FULL
+      // cart, never a leftover single-item "Buy Now" from earlier.
+      link.addEventListener("click", function () {
+        window.ghClearBuyNowItem();
+      });
+    }
     const checkoutBtn = document.createElement("button");
     checkoutBtn.type = "button";
     checkoutBtn.textContent = "Proceed to Checkout";
@@ -186,7 +286,38 @@
     if (!input) return;
 
     const id = input.dataset.cartId;
-    const qty = Math.max(1, parseInt(input.value, 10) || 1);
+    const item = items.find((i) => String(i.id) === String(id));
+    const stock = item && item.product ? parseInt(item.product.stock, 10) || 0 : 0;
+    let qty = Math.max(1, parseInt(input.value, 10) || 1);
+
+    // Auto-clamp quantity to available stock; never allow overselling.
+    if (item) {
+      if (stock > 0) {
+        if (qty > stock && Number.isInteger(input.valueAsNumber) && input.valueAsNumber > stock) {
+          qty = stock;
+          item.note =
+            "Only " + stock + " in stock — quantity adjusted from " +
+            input.valueAsNumber + " to " + stock + ".";
+          if (typeof showToast === "function") {
+            showToast('"' + item.product.name + '" — ' + item.note);
+          }
+        } else {
+          item.note = "";
+        }
+      } else {
+        await removeCartItem(item);
+        items = items.filter((i) => String(i.id) !== String(id));
+        if (typeof showToast === "function") {
+          showToast(
+            '"' + (item.product ? item.product.name : "Product") +
+            '" is out of stock and was removed from your cart.'
+          );
+        }
+        render();
+        ghRefreshCartBadge();
+        return;
+      }
+    }
 
     if (mode === "server") {
       try {
@@ -204,10 +335,13 @@
     } else {
       const cart = ghGetGuestCart();
       const found = cart.find((item) => item.productId === id);
-      if (found) found.quantity = qty;
-      ghSaveGuestCart(cart);
+      if (found) {
+        found.quantity = qty;
+        ghSaveGuestCart(cart);
+      }
     }
 
+    if (item) item.quantity = qty;
     render();
     ghRefreshCartBadge();
   });
@@ -245,6 +379,7 @@
       if (typeof showToast === "function") {
         showToast("Moved to Wishlist");
       }
+      items = items.filter((i) => String(i.id) !== String(cartId));
       render();
       ghRefreshCartBadge();
       return;
@@ -255,27 +390,40 @@
 
     const id = btn.dataset.cartId;
 
-    if (mode === "server") {
-      try {
+    try {
+      if (mode === "server") {
         await ghApiRequest("/api/cart/" + encodeURIComponent(id), {
           method: "DELETE",
         });
-      } catch (error) {
-        console.error("Failed to remove item:", error);
-        if (typeof showToast === "function") {
-          showToast(error.message || "Could not remove item.");
-        }
+      } else {
+        ghSaveGuestCart(
+          ghGetGuestCart().filter((item) => item.productId !== id)
+        );
       }
-    } else {
-      ghSaveGuestCart(ghGetGuestCart().filter((item) => item.productId !== id));
+    } catch (error) {
+      console.error("Failed to remove item:", error);
+      if (typeof showToast === "function") {
+        showToast(error.message || "Could not remove item.");
+      }
+      return;
     }
 
+    // The in-memory `items` array is the render source of truth — drop the
+    // entry BEFORE rendering so the table, totals and badge update
+    // immediately (previously the backend/localStorage was updated but the
+    // stale list was re-rendered, so the row never disappeared).
+    items = items.filter((i) => String(i.id) !== String(id));
     if (typeof showToast === "function") showToast("Item Removed");
     render();
     ghRefreshCartBadge();
   });
 
-  render();
+  // Auto-adjust any quantities to available stock, then render.
+  (async function () {
+    await reconcileStockItems();
+    render();
+    ghRefreshCartBadge();
+  })();
 
   /* ---------- recommended products (consistent cards) ---------- */
 

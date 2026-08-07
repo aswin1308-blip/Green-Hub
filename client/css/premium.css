@@ -804,7 +804,7 @@ textarea {
 
 .gh-hero {
   margin-top: 16px;
-  height: 380px;
+  aspect-ratio: 2.7 / 1;
   border-radius: var(--gh-radius-lg);
   overflow: hidden;
   position: relative;
@@ -2851,9 +2851,6 @@ textarea {
   .gh-section {
     padding-block: 60px;
   }
-  .gh-hero {
-    height: 360px;
-  }
   .gh-features {
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
@@ -2925,7 +2922,7 @@ textarea {
     gap: 14px;
   }
   .gh-hero {
-    height: 320px;
+    aspect-ratio: 2.3 / 1;
     border-radius: 14px;
   }
   .gh-hero-caption h1 {
@@ -3029,9 +3026,6 @@ textarea {
 @media (max-width: 480px) {
   .gh-features {
     grid-template-columns: 1fr;
-  }
-  .gh-hero {
-    height: 280px;
   }
   .gh-hero-caption .gh-kicker {
     font-size: 10.5px;
@@ -4527,4 +4521,90 @@ textarea {
 [data-theme="dark"] .gh-nav-item .gh-dropdown--bulbs a:hover {
   background: #20382A;
   color: var(--gh-secondary);
+}
+
+/* Customer "Cancel Order" button on the My Orders page */
+.gh-cancel-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  color: var(--gh-primary);
+  border: 1.5px solid var(--gh-primary);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .25s ease, color .25s ease, opacity .25s ease;
+}
+
+.gh-cancel-order-btn:hover {
+  background: var(--gh-primary);
+  color: #fff;
+}
+
+.gh-cancel-order-btn:disabled {
+  cursor: not-allowed;
+}
+
+/* Inline stock-adjustment note under the cart quantity input */
+.gh-cart-note {
+  margin-top: 6px;
+  max-width: 180px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #b45309;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 5px 8px;
+}
+
+[data-theme="dark"] .gh-cart-note {
+  background: #3a2a10;
+  border-color: #b45309;
+  color: #fbbf24;
+}
+
+/* Checkout adjustment notice (shown when the server adjusts quantities) */
+.gh-co-notice {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #f59e0b;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.gh-co-notice a {
+  color: #166534;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.gh-co-notice.error {
+  border-color: #ef4444;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.gh-co-notice.error a {
+  color: #991b1b;
+}
+
+[data-theme="dark"] .gh-co-notice {
+  background: #3a2a10;
+  border-color: #b45309;
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .gh-co-notice.error {
+  background: #3f1d1d;
+  border-color: #dc2626;
+  color: #fca5a5;
 }

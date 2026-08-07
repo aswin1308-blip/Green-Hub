@@ -1124,7 +1124,7 @@ document.addEventListener("keydown", function (e) {
         MY ORDERS (customer orders page)
 ========================================== */
 
-function ghStatusColor(status){
+function ghStatusColor(status) {
 
     const s=String(status||"").toLowerCase();
 
@@ -1135,6 +1135,52 @@ function ghStatusColor(status){
     if(s==="cancelled")return "#c62828";
 
     return "#1565c0";
+
+}
+
+function ghCancelSuccessFx(button,statusTd,extraMsg) {
+
+    if(statusTd){statusTd.textContent="Cancelled";statusTd.style.color="#c62828";}
+
+    if(button){button.disabled=true;button.textContent="Cancelled";button.style.opacity=".55";}
+
+    if(extraMsg)setTimeout(function(){window.alert(extraMsg);},120);
+
+}
+
+function ghCancelOrder(orderId, button, statusTd) {
+
+    if(!window.confirm("Are you sure you want to cancel this order?"))return;
+
+    if(button)button.disabled=true;
+
+    if(button)button.textContent="Cancelling...";
+
+    window.ghApiRequest("/api/orders/"+encodeURIComponent(orderId)+"/cancel",{method:"PATCH"})
+
+        .then(function(data){
+
+            showToast(data&&data.message?data.message:"Order cancelled successfully");
+
+            var extra="";
+
+            if(data&&data.refundRequired){
+
+                extra="Your payment has been captured. A refund will be processed shortly.";
+
+            }
+
+            ghCancelSuccessFx(button,statusTd,extra);
+
+        })
+
+        .catch(function(error){
+
+            if(button){button.disabled=false;button.textContent="Cancel Order";}
+
+            showToast((error&&error.message)||"Could not cancel your order. Please try again.");
+
+        });
 
 }
 
@@ -1190,7 +1236,7 @@ if(ordersTableBody){
 
             const td=document.createElement("td");
 
-            td.colSpan=6;
+            td.colSpan=7;
 
             td.style.textAlign="center";
 
@@ -1236,7 +1282,37 @@ if(ordersTableBody){
 
             dateTd.textContent=new Date(order.createdAt).toLocaleDateString();
 
-            tr.append(idTd,productsTd,qtyTd,totalTd,statusTd,dateTd);
+            const actionTd=document.createElement("td");
+
+            if(order.status==="Pending"){
+
+                const cancelBtn=document.createElement("button");
+
+                cancelBtn.type="button";
+
+                cancelBtn.textContent="Cancel Order";
+
+                cancelBtn.className="gh-cancel-order-btn";
+
+                cancelBtn.setAttribute("aria-label","Cancel order "+String(order._id||""));
+
+                cancelBtn.addEventListener("click",function(event){
+
+                    event.stopPropagation();
+
+                    ghCancelOrder(String(order._id),cancelBtn,statusTd);
+
+                });
+
+                actionTd.appendChild(cancelBtn);
+
+            }else{
+
+                actionTd.textContent="—";
+
+            }
+
+            tr.append(idTd,productsTd,qtyTd,totalTd,statusTd,dateTd,actionTd);
 
             ordersTableBody.appendChild(tr);
 
@@ -1250,7 +1326,7 @@ if(ordersTableBody){
 
         const td=document.createElement("td");
 
-        td.colSpan=6;
+        td.colSpan=7;
 
         td.textContent=error.message||"Could not load your orders.";
 

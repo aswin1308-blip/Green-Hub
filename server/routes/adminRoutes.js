@@ -13,6 +13,7 @@ const adminCustomerController = require("../controllers/adminCustomerController"
 const adminDashboardController = require("../controllers/adminDashboardController");
 const couponController = require("../controllers/couponController");
 const bannerController = require("../controllers/bannerController");
+const notificationController = require("../controllers/notificationController");
 
 const router = express.Router();
 
@@ -180,6 +181,16 @@ router.patch(
 
 // ---- Dashboard ----
 router.get("/dashboard/summary", adminDashboardController.getSummary);
+
+// ---- Notifications ----
+router.get("/notifications", notificationController.getNotifications);
+
+router.patch(
+  "/notifications/:id/read",
+  [check("id").isMongoId().withMessage("Invalid notification id")],
+  validate,
+  notificationController.markNotificationRead
+);
 
 // ---- Coupons ----
 const couponCreateRules = [

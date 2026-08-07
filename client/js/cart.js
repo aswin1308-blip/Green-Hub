@@ -10,7 +10,7 @@ function ghApiBase() {
   if (typeof window !== "undefined" && window.GH_API_BASE) {
     return window.GH_API_BASE;
   }
-  return "http://localhost:5000";
+  return "https://greenhub1.onrender.com";
 }
 
 const GH_TOKEN_KEY = "greenhub_token";
@@ -253,24 +253,89 @@ async function ghRefreshCartBadge() {
 
 /* ---------- buy now ---------- */
 
-async function ghBuyNow(productId, quantity) {
+// A "Buy Now" purchase is intentionally ISOLATED from the persistent cart.
+// The selected product + quantity is stored in sessionStorage (short-lived,
+// tab-scoped) and is never written to the server cart or guest cart. The
+// checkout page reads this flag and renders a single-item order summary.
+var GH_BUY_NOW_KEY = "ghBuyNowItem";
+var GH_BUY_NOW_TTL = 30 * 60 * 1000; // 30 minutes
+
+function ghGetBuyNowItem() {
   try {
-    await ghAddToCart(productId, quantity);
-  } catch (error) {
-    if (typeof showToast === "function") {
-      showToast(error.message || "Could not add item to cart.");
+    var raw = sessionStorage.getItem(GH_BUY_NOW_KEY);
+    if (!raw) return null;
+    var item = JSON.parse(raw);
+    if (!item || !item.productId || !item.quantity || !item.ts) return null;
+    if (Date.now() - Number(item.ts) > GH_BUY_NOW_TTL) {
+      sessionStorage.removeItem(GH_BUY_NOW_KEY);
+      return null;
     }
-    return;
+    return item;
+  } catch (error) {
+    return null;
+  }
+}
+
+function ghClearBuyNowItem() {
+  try {
+    sessionStorage.removeItem(GH_BUY_NOW_KEY);
+  } catch (error) {
+    /* noop */
+  }
+}
+
+/* Starts an isolated single-item checkout WITHOUT touching the cart.
+   Returns true if checkout is starting, false if it could not start. */
+async function ghBuyNow(productId, quantity) {
+  var qty = Math.max(1, parseInt(quantity, 10) || 1);
+  if (!productId) {
+    if (typeof showToast === "function") showToast("No product selected.", true);
+    return false;
   }
 
-  if (typeof showToast === "function") showToast("Added to cart. Redirecting...");
-  ghRefreshCartBadge();
+  try {
+    // Quick public availability check BEFORE navigating (cart untouched).
+    var data = await ghApiRequest(
+      "/api/products/" + encodeURIComponent(productId)
+    );
+    var product = (data && data.product) || null;
+    var stock = Number(product && product.stock) || 0;
 
-  if (ghIsLoggedIn()) {
-    window.location.href = "checkout.html";
-  } else {
-    window.location.href =
-      "login.html?redirect=" + encodeURIComponent("checkout.html");
+    if (!product || !product._id) {
+      throw new Error("This product is no longer available.");
+    }
+    if (stock <= 0) {
+      throw new Error("This product is currently out of stock.");
+    }
+
+    var finalQty = Math.min(qty, stock);
+    if (finalQty < qty && typeof showToast === "function") {
+      showToast(
+        "Only " + stock + " in stock - quantity adjusted to " + finalQty + "."
+      );
+    }
+
+    sessionStorage.setItem(
+      GH_BUY_NOW_KEY,
+      JSON.stringify({
+        productId: productId,
+        quantity: finalQty,
+        ts: Date.now(),
+      })
+    );
+
+    if (ghIsLoggedIn()) {
+      window.location.href = "checkout.html";
+    } else {
+      window.location.href =
+        "login.html?redirect=" + encodeURIComponent("checkout.html");
+    }
+    return true;
+  } catch (error) {
+    if (typeof showToast === "function") {
+      showToast(error.message || "Could not start checkout.", true);
+    }
+    return false;
   }
 }
 
@@ -288,7 +353,12 @@ function ghHandleCartButtonClick(event) {
   if (btn.hasAttribute("data-buy-now")) {
     btn.textContent = "Redirecting...";
     btn.disabled = true;
-    ghBuyNow(productId, quantity);
+    ghBuyNow(productId, quantity).then(function (started) {
+      if (!started) {
+        btn.textContent = btn.dataset.original || "Buy Now";
+        btn.disabled = false;
+      }
+    });
     return;
   }
 

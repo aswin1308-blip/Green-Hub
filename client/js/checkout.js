@@ -4,9 +4,16 @@
         coupon + payment + place order.
         - Loads the cart from MongoDB (guest cart
           is synced to the server on entry)
-        - Places the order via POST /api/orders
+        - Validates the cart against CURRENT stock via
+          POST /api/orders/preflight BEFORE any payment,
+          auto-adjusting quantities server-side
+        - Shows the customer what changed, then charges
+          and places the order via POST /api/orders
         - Clears the cart and redirects to
           order-success.html?id=<orderId>
+        - "Buy Now" mode (sessionStorage ghBuyNowItem): renders ONLY the
+          single selected product and places the order for exactly that
+          item — the persisted cart is never touched
 ========================================== */
 
 (function () {
@@ -19,6 +26,7 @@
   var emptyEl = document.querySelector('[data-checkout-empty]');
   var itemsEl = document.querySelector('[data-co-items]');
   var breakdownEl = document.querySelector('[data-breakdown]');
+  var noticeEl = document.querySelector('[data-co-notice]');
   var placeBtn = document.querySelector('[data-place-order]');
   var placeText = document.querySelector('[data-place-text]');
 
@@ -36,8 +44,16 @@
   var currentItems = [];
   var appliedCoupon = null; // { code, discount }
 
+  // True when the customer arrived via "Buy Now" (single-item checkout).
+  // In this mode the persisted cart / guest cart are never read or written.
+  var isBuyNow = false;
+
+  // Server-approved order state (set by /api/orders/preflight).
+  var verifiedPayload = null; // { items, totals, adjustments }
+  var serverTotals = null;    // totals shown/payed once verified
+
   function apiBase() {
-    return (window.GH_API_BASE) || 'http://localhost:5000';
+    return (window.GH_API_BASE) || 'https://greenhub1.onrender.com';
   }
 
   function money(n) {
@@ -53,10 +69,18 @@
     if (window.ghRefreshCartBadge) window.ghRefreshCartBadge();
   }
 
-  function showEmpty() {
+  function showEmpty(message) {
     if (gateEl) gateEl.style.display = 'none';
     if (rootEl) rootEl.style.display = 'none';
-    if (emptyEl) emptyEl.style.display = 'block';
+    if (emptyEl) {
+      emptyEl.style.display = 'block';
+      if (message) {
+        var title = emptyEl.querySelector('h3');
+        var body = emptyEl.querySelector('p');
+        if (title) title.textContent = message.title;
+        if (body) body.textContent = message.body;
+      }
+    }
   }
 
   function showGate() {
@@ -107,11 +131,23 @@
 
   function renderBreakdown() {
     if (!breakdownEl) return;
-    var subtotal = subtotalOf();
-    var delivery = deliveryFor(subtotal);
-    var tax = Math.round(subtotal * GST_RATE);
-    var discount = appliedCoupon ? appliedCoupon.discount : 0;
-    var total = subtotal + delivery + tax - discount;
+
+    var subtotal, delivery, tax, discount, total;
+
+    if (serverTotals) {
+      // Server-verified totals are authoritative (payment uses these).
+      subtotal = serverTotals.subtotal || 0;
+      delivery = serverTotals.deliveryCharge || 0;
+      tax = serverTotals.tax || 0;
+      discount = serverTotals.discount || 0;
+      total = serverTotals.total || 0;
+    } else {
+      subtotal = subtotalOf();
+      delivery = deliveryFor(subtotal);
+      tax = Math.round(subtotal * GST_RATE);
+      discount = appliedCoupon ? appliedCoupon.discount : 0;
+      total = subtotal + delivery + tax - discount;
+    }
 
     var html =
       '<div class="gh-bd-row"><span>Subtotal</span><b>' + money(subtotal) + '</b></div>' +
@@ -135,6 +171,7 @@
       if (removeBtn) {
         removeBtn.addEventListener('click', function () {
           appliedCoupon = null;
+          resetVerification();
           if (couponInput) couponInput.value = '';
           couponAppliedEl.style.display = 'none';
           renderBreakdown();
@@ -152,6 +189,94 @@
     renderCoupon();
   }
 
+  // Drop a previously approved payload when anything that affects the
+  // totals or quantities changes (coupon applied/removed, cart changed).
+  function resetVerification() {
+    verifiedPayload = null;
+    serverTotals = null;
+    hideNotice();
+    if (placeText) placeText.innerHTML = 'Place Order';
+    if (placeBtn) placeBtn.disabled = false;
+  }
+
+  function showNotice(html, kind) {
+    if (!noticeEl) return;
+    noticeEl.style.display = 'block';
+    noticeEl.className = 'gh-co-notice' + (kind ? ' ' + kind : '');
+    noticeEl.innerHTML = html;
+  }
+
+  function hideNotice() {
+    if (!noticeEl) return;
+    noticeEl.style.display = 'none';
+    noticeEl.innerHTML = '';
+  }
+
+  // Renders the server-reported adjustments + the corrected total.
+  function renderAdjustmentNotice(adjustments, totals) {
+    if (!noticeEl) return;
+    var lines = [];
+    (adjustments || []).forEach(function (a) {
+      var label = '"' + String(a.name || 'Item') + '"';
+      if (a.removed) {
+        lines.push(label + ' — removed' + (a.reason === 'unavailable' ? ' (no longer available)' : ' (out of stock)') + '.');
+      } else {
+        lines.push(label + ' — quantity reduced from ' + a.requested + ' to ' + a.finalQuantity + ' (only ' + a.available + ' in stock).');
+      }
+    });
+    if (totals && totals.couponError) lines.push(String(totals.couponError) + '.');
+    lines.push('Your new total is <b>' + money(totals ? totals.total : 0) + '</b>. Please review and confirm to continue.');
+
+    noticeEl.style.display = 'block';
+    noticeEl.className = 'gh-co-notice';
+    noticeEl.innerHTML = '<b>Your order was adjusted:</b><br>' + lines.join('<br>');
+  }
+
+  // Takes over the Place Order button when there is nothing left to buy,
+  // pointing the customer back to the cart/products page.
+  function setPlaceUnavailable(label) {
+    if (placeBtn) placeBtn.disabled = true;
+    if (placeText) placeText.innerHTML = label || 'Nothing Available';
+  }
+
+  function setPlaceBusy(on, label) {
+    if (!placeBtn || !placeText) return;
+    placeBtn.disabled = on;
+    placeText.innerHTML = on
+      ? '<span class="gh-btn-spinner" aria-hidden="true"></span>' + (label || 'Placing Order...')
+      : (label || 'Place Order');
+  }
+
+  // Apply the server-approved quantities + totals to the on-screen summary.
+  function applyVerifiedPayload(payload) {
+    var approved = {};
+    (payload.items || []).forEach(function (it) {
+      approved[String(it.productId)] = it;
+    });
+
+    currentItems = currentItems
+      .filter(function (entry) {
+        return entry.product && approved[String(entry.product._id)];
+      })
+      .map(function (entry) {
+        var it = approved[String(entry.product._id)];
+        if (it) entry.quantity = it.quantity;
+        return entry;
+      });
+
+    serverTotals = payload.totals || {};
+
+    // If the server had to drop the coupon, reflect that in the UI.
+    if (serverTotals.couponCode) {
+      if (appliedCoupon) appliedCoupon.discount = serverTotals.discount || 0;
+    } else if (appliedCoupon) {
+      appliedCoupon = null;
+      if (couponInput) couponInput.value = '';
+    }
+
+    renderAll();
+  }
+
   function applyCoupon() {
     if (!couponInput) return;
     var code = couponInput.value.trim();
@@ -164,13 +289,14 @@
     fetch(apiBase() + '/api/coupons/validate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code, amount: subtotalOf() }),
+      body: JSON.stringify({ code: code, amount: serverTotals ? serverTotals.subtotal : subtotalOf() }),
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
       })
       .then(function (result) {
         if (!result.ok) throw new Error(result.data.message || 'Invalid coupon');
+        resetVerification();
         appliedCoupon = { code: result.data.code, discount: Number(result.data.discount) || 0 };
         if (couponInput) couponInput.value = result.data.code;
         renderAll();
@@ -239,15 +365,10 @@
     return checked ? (checked.value || 'Cash on Delivery') : 'Cash on Delivery';
   }
 
-  function setPlaceBusy(on) {
-    if (!placeBtn || !placeText) return;
-    placeBtn.disabled = on;
-    placeText.innerHTML = on
-      ? '<span class="gh-btn-spinner" aria-hidden="true"></span>Placing Order...'
-      : 'Place Order';
-  }
-
   function clearCart() {
+    // Buy Now never touches the persisted cart, so there is nothing to
+    // clear — the customer's existing cart items must survive this order.
+    if (isBuyNow) return Promise.resolve();
     var tasks = currentItems
       .filter(function (entry) { return entry._id; })
       .map(function (entry) {
@@ -257,21 +378,10 @@
     return Promise.all(tasks);
   }
 
-  function placeOrder() {
-    if (!currentItems.length) {
-      toast('Your cart is empty', true);
-      return;
-    }
-    var form = validateForm();
-    if (!form) return;
-
-    var subtotal = subtotalOf();
-    var delivery = deliveryFor(subtotal);
-    var tax = Math.round(subtotal * GST_RATE);
-    var discount = appliedCoupon ? appliedCoupon.discount : 0;
-    var total = subtotal + delivery + tax - discount;
-
-    var products = currentItems
+  // Items as the server expects them (productId + quantity; the server
+  // never trusts prices/quantities from the client).
+  function buildOrderItems() {
+    return currentItems
       .filter(function (entry) { return entry.product && entry.product._id; })
       .map(function (entry) {
         var product = entry.product;
@@ -283,9 +393,43 @@
           quantity: parseInt(entry.quantity, 10) || 1,
         };
       });
+  }
 
-    if (!products.length) {
+  function handlePlacementError(err, prefix) {
+    var msg = (err && err.message) || prefix;
+    // The only hard error the server returns is "everything is gone".
+    if (String(msg).toLowerCase().indexOf('out of stock') !== -1) {
+      setPlaceUnavailable('Nothing Available');
+      showNotice(
+        '<b>Sorry - the items in your order are out of stock.</b> ' +
+        (isBuyNow
+          ? '<a href="products.html">Browse products</a>.'
+          : '<a href="cart.html">Back to cart</a> or <a href="products.html">browse products</a>.'),
+        'error'
+      );
+      return;
+    }
+    toast(msg, true);
+    setPlaceBusy(false);
+  }
+
+  // Charges the verified total and places the order with the
+  // server-approved quantities.
+  function confirmAndPay(payload, form) {
+    var totals = payload.totals || {};
+    var approvedProducts = (payload.items || []).map(function (it) {
+      return {
+        productId: it.productId,
+        name: it.name,
+        image: it.image || '',
+        price: it.price,
+        quantity: it.quantity,
+      };
+    });
+
+    if (!approvedProducts.length) {
       toast('Your cart items are no longer available', true);
+      setPlaceBusy(false);
       return;
     }
 
@@ -293,12 +437,10 @@
 
     var isOnlinePayment = getPaymentMethod() !== 'Cash on Delivery';
 
-    // For online methods, run the Razorpay checkout first. If the user
-    // cancels or the payment fails, we abort and keep the cart intact.
     var payStep;
     try {
       payStep = isOnlinePayment
-        ? window.ghRazorpayCheckout(total, { name: form.name, email: form.email, phone: form.phone })
+        ? window.ghRazorpayCheckout(totals.total, { name: form.name, email: form.email, phone: form.phone })
         : Promise.resolve({ success: true, paymentId: '' });
     } catch (err) {
       console.error('Failed to start payment:', err);
@@ -319,13 +461,8 @@
             customerEmail: form.email,
             customerPhone: form.phone,
             customerAddress: form.address,
-            products: products,
-            subtotal: subtotal,
-            deliveryCharge: delivery,
-            tax: tax,
-            discount: discount,
-            couponCode: appliedCoupon ? appliedCoupon.code : '',
-            total: total,
+            products: approvedProducts,
+            couponCode: totals.couponCode || '',
             paymentMethod: getPaymentMethod(),
             razorpayPaymentId: payRes.paymentId || '',
           }),
@@ -333,7 +470,11 @@
       })
       .then(function (data) {
         var order = (data && data.order) || {};
+        if (data && data.adjusted && data.adjustments && data.adjustments.length) {
+          toast('Stock changed at the last moment — your order was adjusted.', true);
+        }
         return clearCart().then(function () {
+          if (isBuyNow && window.ghClearBuyNowItem) window.ghClearBuyNowItem();
           toast('Order placed successfully');
           refreshBadge();
           setTimeout(function () {
@@ -342,14 +483,131 @@
         });
       })
       .catch(function (err) {
-        toast((err && err.message) || 'Could not place your order. Please try again.', true);
-        setPlaceBusy(false);
+        handlePlacementError(err, 'Could not place your order. Please try again.');
+      });
+  }
+
+  function placeOrder() {
+    if (!currentItems.length) {
+      toast(isBuyNow ? 'This product is no longer available' : 'Your cart is empty', true);
+      return;
+    }
+    var form = validateForm();
+    if (!form) return;
+
+    // Already verified with the server and nothing changed since:
+    // go straight to payment with the approved payload.
+    if (verifiedPayload) {
+      confirmAndPay(verifiedPayload, form);
+      return;
+    }
+
+    var itemsForServer = buildOrderItems();
+    if (!itemsForServer.length) {
+      toast(isBuyNow ? 'This product is no longer available' : 'Your cart items are no longer available', true);
+      return;
+    }
+
+    setPlaceBusy(true, 'Checking stock...');
+
+    // Re-validate against CURRENT stock BEFORE any payment is charged.
+    // The server clamps quantities and returns the corrected summary.
+    window.ghApiRequest('/api/orders/preflight', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        products: itemsForServer,
+        couponCode: appliedCoupon ? appliedCoupon.code : '',
+      }),
+    })
+      .then(function (data) {
+        if (!data || !data.success) {
+          throw new Error((data && data.message) || 'Could not check your order');
+        }
+
+        var totals = data.totals || {};
+        var adjustments = data.adjustments || [];
+
+        // Everything in the cart is gone — clear path back, no dead end.
+        if (data.allOutOfStock || !data.items || !data.items.length) {
+          setPlaceUnavailable('Nothing Available');
+          showNotice(
+            '<b>Sorry - everything in your order is currently out of stock.</b> ' +
+            (isBuyNow
+              ? '<a href="products.html">Browse products</a>.'
+              : '<a href="cart.html">Back to cart</a> or <a href="products.html">browse products</a>.'),
+            'error'
+          );
+          return;
+        }
+
+        verifiedPayload = { items: data.items, totals: totals, adjustments: adjustments };
+
+        if (adjustments.length || data.adjusted) {
+          // Show exactly what changed and ask the customer to confirm.
+          applyVerifiedPayload(verifiedPayload);
+          renderAdjustmentNotice(adjustments, totals);
+          setPlaceBusy(false, 'Confirm & Place Order');
+          toast('Your order was adjusted — please review and confirm.', true);
+        } else {
+          // Quantities are already fine: charge and place directly.
+          hideNotice();
+          confirmAndPay(verifiedPayload, form);
+        }
+      })
+      .catch(function (err) {
+        handlePlacementError(err, 'Could not check your order. Please try again.');
+      });
+  }
+
+  // Buy Now (isolated single-item checkout): load JUST the product that
+  // was selected on the product page. The persisted cart is never fetched
+  // and the guest cart is never synced — both stay exactly as they were.
+  function bootBuyNow(item) {
+    isBuyNow = true;
+    return window.ghApiRequest('/api/products/' + encodeURIComponent(item.productId))
+      .then(function (data) {
+        var product = (data && data.product) || null;
+        var stock = Number(product && product.stock) || 0;
+
+        if (!product || !product._id || stock <= 0) {
+          throw new Error('This product is no longer available');
+        }
+
+        var requested = Math.max(1, parseInt(item.quantity, 10) || 1);
+        var qty = Math.min(requested, stock);
+        currentItems = [{ product: product, quantity: qty }];
+
+        if (qty < requested) {
+          toast('Only ' + stock + ' in stock - quantity adjusted to ' + qty + '.', true);
+        }
+
+        if (gateEl) gateEl.style.display = 'none';
+        if (rootEl) rootEl.style.display = 'grid';
+        if (emptyEl) emptyEl.style.display = 'none';
+        bindPaymentOptions();
+        renderAll();
+      })
+      .catch(function (err) {
+        console.error('Failed to load Buy Now item:', err);
+        showEmpty({
+          title: 'This product is no longer available',
+          body: 'It may have sold out or is no longer active. Browse our other plants instead.',
+        });
       });
   }
 
   function init() {
     if (!window.ghIsLoggedIn || !window.ghIsLoggedIn()) {
       showGate();
+      return;
+    }
+
+    // Arrived via "Buy Now" -> check out exactly the single selected
+    // product, isolated from the persistent cart (which stays untouched).
+    var buyNowItem = window.ghGetBuyNowItem ? window.ghGetBuyNowItem() : null;
+    if (buyNowItem) {
+      bootBuyNow(buyNowItem);
       return;
     }
 

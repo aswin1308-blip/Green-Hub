@@ -14,7 +14,7 @@
   }
 
   function apiBase() {
-    return (window.GH_API_BASE) || 'http://localhost:5000';
+    return (window.GH_API_BASE) || 'https://greenhub1.onrender.com';
   }
 
   function row(label, valueHtml, extraClass) {

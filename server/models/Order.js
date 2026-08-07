@@ -135,6 +135,13 @@ const orderSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Set when an order that already captured payment is cancelled —
+    // tells the admin a refund (manual or via Razorpay) is still owed.
+    refundRequired: {
+      type: Boolean,
+      default: false,
+    },
+
     status: {
       type: String,
       enum: {

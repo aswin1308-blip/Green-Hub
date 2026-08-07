@@ -1,5 +1,5 @@
-const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:5000/api").replace(/\/$/, "");
-const ASSET_URL = (import.meta.env.VITE_ASSET_URL || "http://localhost:5000").replace(/\/$/, "");
+const API_URL = (import.meta.env.VITE_API_URL || "https://greenhub1.onrender.com/api").replace(/\/$/, "");
+const ASSET_URL = (import.meta.env.VITE_ASSET_URL || "https://greenhub1.onrender.com").replace(/\/$/, "");
 
 export function getToken() {
   return localStorage.getItem("gh_admin_token");

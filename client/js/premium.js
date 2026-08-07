@@ -2,7 +2,7 @@
   'use strict';
 
   if (typeof window.GH_API_BASE === 'undefined') {
-    window.GH_API_BASE = 'http://localhost:5000';
+    window.GH_API_BASE = 'https://greenhub1.onrender.com';
   }
 
   var API = window.GH_API_BASE;

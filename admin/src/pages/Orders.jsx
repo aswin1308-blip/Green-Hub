@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Modal from "../ui/Modal.jsx";
 import { useToast } from "../ui/useToast.js";
-import { getOrders, updateOrderStatus } from "../api/orders.js";
+import { getOrders, getOrder, updateOrderStatus } from "../api/orders.js";
 import { assetUrl } from "../api.js";
 import "./Orders.css";
 
@@ -29,6 +30,8 @@ function StatusBadge({ value, type }) {
 
 export default function Orders() {
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const handledOpen = useRef(false);
 
   const [orders, setOrders] = useState([]);
   const [total, setTotal] = useState(0);
@@ -73,6 +76,28 @@ export default function Orders() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Deep link from a notification: ?open=<orderId> opens that order's
+  // detail modal directly, then the query param is cleared.
+  useEffect(() => {
+    const openId = searchParams.get("open");
+    if (!openId || handledOpen.current) return;
+    handledOpen.current = true;
+    (async () => {
+      try {
+        const res = await getOrder(openId);
+        if (res && res.order) {
+          setStatusDraft(res.order.status);
+          setSelected(res.order);
+          setDetailOpen(true);
+        }
+      } catch (err) {
+        toast.error(err.message);
+      } finally {
+        setSearchParams({}, { replace: true });
+      }
+    })();
+  }, [searchParams, setSearchParams, toast]);
 
   const openDetails = (order) => {
     setStatusDraft(order.status);
@@ -326,6 +351,11 @@ export default function Orders() {
               </div>
               <div>
                 <h4 className="section-title">Order status</h4>
+                {selected.refundRequired && (
+                  <p className="refund-notice">
+                    Payment already captured — refund owed to customer.
+                  </p>
+                )}
                 <div className="status-editor">
                   <select
                     value={statusDraft}

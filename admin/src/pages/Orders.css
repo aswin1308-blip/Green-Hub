@@ -114,6 +114,17 @@
   align-items: center;
 }
 
+.refund-notice {
+  margin: 0 0 10px;
+  padding: 8px 12px;
+  border: 1px solid #7c3aed;
+  background: #ede9fe;
+  color: #5b21b6;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 .status-editor select {
   flex: 1;
   padding: 8px 10px;

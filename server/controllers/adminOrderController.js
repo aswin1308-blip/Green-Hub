@@ -102,6 +102,10 @@ const updateOrderStatus = async (req, res, next) => {
     }
 
     const wasNotCancelled = order.status !== "Cancelled";
+    const movingToCancelled = req.body.status === "Cancelled";
+    if (movingToCancelled && order.paymentStatus === "Paid") {
+      order.refundRequired = true;
+    }
     order.status = req.body.status;
     await order.save();
 

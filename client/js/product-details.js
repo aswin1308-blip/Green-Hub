@@ -9,7 +9,7 @@
   var RECENT_KEY = 'gh_recent';
 
   function apiBase() {
-    return (window.GH_API_BASE) || 'http://localhost:5000';
+    return (window.GH_API_BASE) || 'https://greenhub1.onrender.com';
   }
 
   function money(n) {
@@ -329,14 +329,19 @@
     var buy = function () {
       if (buyBtn.disabled) return;
       setSpinner(buyBtn, buyText, true, 'Redirecting...');
+      var restore = function () {
+        setSpinner(buyBtn, buyText, false, 'Buy Now');
+      };
       if (window.ghBuyNow) {
-        window.ghBuyNow(product._id, getQty());
+        Promise.resolve(window.ghBuyNow(product._id, getQty())).then(function (started) {
+          if (!started) restore();
+        });
       } else {
         window.ghAddToCart(product._id, getQty())
           .then(function () { window.location.href = 'checkout.html'; })
           .catch(function (err) {
             toast((err && err.message) || 'Could not start checkout', true);
-            setSpinner(buyBtn, buyText, false, 'Buy Now');
+            restore();
           });
       }
     };

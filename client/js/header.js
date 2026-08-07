@@ -224,7 +224,7 @@
   // with showInNavDropdown:true grouped by navGroup. Any group with zero
   // matching categories becomes a plain link: chevron removed, panel hidden.
   function hydrateNav() {
-    var apiBase = (typeof window.GH_API_BASE !== 'undefined' ? window.GH_API_BASE : 'http://localhost:5000');
+    var apiBase = (typeof window.GH_API_BASE !== 'undefined' ? window.GH_API_BASE : 'https://greenhub1.onrender.com');
     fetch(apiBase + '/api/categories/nav')
       .then(function (res) { return res.ok ? res.json() : Promise.reject(new Error('Failed')); })
       .then(function (data) {
