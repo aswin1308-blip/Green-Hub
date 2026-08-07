@@ -8,6 +8,12 @@ const isObjectId = (value) =>
   mongoose.Types.ObjectId.isValid(value) &&
   String(new mongoose.Types.ObjectId(value)) === value;
 
+// Shared helper: full populated cart for a user. Every endpoint returns this
+// same shape ({ success, cart }) so the frontend can replace its local state
+// with the response directly.
+const getUserCart = async (userId) =>
+  Cart.find({ user: userId }).populate("product");
+
 // Add to Cart (protected - uses logged-in user from JWT)
 const addToCart = async (req, res) => {
   try {
@@ -36,19 +42,20 @@ const addToCart = async (req, res) => {
       product: productId,
     });
 
-    let cart;
     if (existing) {
       existing.quantity = Math.min(MAX_QTY, existing.quantity + qty);
-      cart = await existing.save();
+      await existing.save();
     } else {
-      cart = await Cart.create({
+      await Cart.create({
         user: req.user._id,
         product: productId,
         quantity: qty,
       });
     }
 
-    res.status(201).json({
+    const cart = await getUserCart(req.user._id);
+
+    res.status(200).json({
       success: true,
       message: "Product Added to Cart",
       cart,
@@ -65,7 +72,7 @@ const addToCart = async (req, res) => {
 // Get User Cart (protected)
 const getCart = async (req, res) => {
   try {
-    const cart = await Cart.find({ user: req.user._id }).populate("product");
+    const cart = await getUserCart(req.user._id);
 
     res.status(200).json({
       success: true,
@@ -81,31 +88,66 @@ const getCart = async (req, res) => {
 };
 
 // Update Quantity (protected)
+// NOTE: req.params.id is the cart ITEM's _id (the Cart document id), not the
+// product id — it is matched against the Cart document's own _id below.
 const updateCart = async (req, res) => {
   try {
+    const { id } = req.params;
     const { quantity } = req.body;
 
-    if (parseInt(quantity, 10) < 1 || Number.isNaN(parseInt(quantity, 10))) {
+    if (!isObjectId(id)) {
       return res.status(400).json({
         success: false,
-        message: "Quantity must be at least 1",
+        message: "Invalid cart item id",
       });
     }
 
-    const qty = Math.min(MAX_QTY, parseInt(quantity, 10));
+    const qty = parseInt(quantity, 10);
 
-    const cart = await Cart.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
-      { quantity: qty },
+    if (Number.isNaN(qty)) {
+      return res.status(400).json({
+        success: false,
+        message: "Quantity must be a valid number",
+      });
+    }
+
+    // Quantity <= 0 means the item should be removed from the cart.
+    if (qty <= 0) {
+      const removed = await Cart.findOneAndDelete({
+        _id: id,
+        user: req.user._id,
+      });
+
+      if (!removed) {
+        return res.status(404).json({
+          success: false,
+          message: "Cart item not found",
+        });
+      }
+
+      const cart = await getUserCart(req.user._id);
+
+      return res.status(200).json({
+        success: true,
+        message: "Item Removed from Cart",
+        cart,
+      });
+    }
+
+    const cartItem = await Cart.findOneAndUpdate(
+      { _id: id, user: req.user._id },
+      { quantity: Math.min(MAX_QTY, qty) },
       { new: true }
     );
 
-    if (!cart) {
+    if (!cartItem) {
       return res.status(404).json({
         success: false,
         message: "Cart item not found",
       });
     }
+
+    const cart = await getUserCart(req.user._id);
 
     res.status(200).json({
       success: true,
@@ -122,23 +164,37 @@ const updateCart = async (req, res) => {
 };
 
 // Remove Item (protected)
+// NOTE: req.params.id is the cart ITEM's _id (the Cart document id), not the
+// product id — matched against the Cart document's own _id below.
 const removeCart = async (req, res) => {
   try {
-    const cart = await Cart.findOneAndDelete({
-      _id: req.params.id,
+    const { id } = req.params;
+
+    if (!isObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid cart item id",
+      });
+    }
+
+    const removed = await Cart.findOneAndDelete({
+      _id: id,
       user: req.user._id,
     });
 
-    if (!cart) {
+    if (!removed) {
       return res.status(404).json({
         success: false,
         message: "Cart item not found",
       });
     }
 
+    const cart = await getUserCart(req.user._id);
+
     res.status(200).json({
       success: true,
       message: "Item Removed",
+      cart,
     });
   } catch (error) {
     console.error("[removeCart] error:", error);

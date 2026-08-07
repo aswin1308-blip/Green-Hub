@@ -71,8 +71,12 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ quantity: qty }),
         });
+        return true;
       } catch (error) {
+        // 404 = item already gone server-side.
+        if (error.status === 404) return false;
         console.error("Failed to adjust cart quantity:", error);
+        return true;
       }
     } else {
       const cart = ghGetGuestCart();
@@ -81,6 +85,7 @@
         found.quantity = qty;
         ghSaveGuestCart(cart);
       }
+      return true;
     }
   }
 
@@ -91,7 +96,9 @@
           method: "DELETE",
         });
       } catch (error) {
-        console.error("Failed to remove cart item:", error);
+        if (error.status !== 404) {
+          console.error("Failed to remove cart item:", error);
+        }
       }
     } else {
       ghSaveGuestCart(
@@ -123,12 +130,15 @@
       }
 
       if (item.quantity > available) {
-        item.note =
-          "Only " + available + " in stock — quantity adjusted from " +
-          item.quantity + " to " + available + ".";
-        changed.push(item.note);
-        await persistSetItemQty(item, available);
-        item.quantity = available;
+        if (await persistSetItemQty(item, available)) {
+          item.note =
+            "Only " + available + " in stock — quantity adjusted from " +
+            item.quantity + " to " + available + ".";
+          changed.push(item.note);
+          item.quantity = available;
+        } else {
+          continue;
+        }
       } else {
         item.note = "";
       }
@@ -352,6 +362,13 @@
           body: JSON.stringify({ quantity: qty }),
         });
       } catch (error) {
+        // 404 = item already gone server-side; drop the stale row.
+        if (error.status === 404) {
+          items = items.filter((i) => String(i.id) !== String(id));
+          render();
+          ghRefreshCartBadge();
+          return;
+        }
         console.error("Failed to update quantity:", error);
         if (typeof showToast === "function") {
           showToast(error.message || "Could not update quantity.");
@@ -409,6 +426,13 @@
           }
         }
       } catch (error) {
+        // 404 = item already gone server-side; drop the stale row.
+        if (error.status === 404) {
+          items = items.filter((i) => String(i.id) !== String(id));
+          render();
+          ghRefreshCartBadge();
+          return;
+        }
         console.error("Failed to update quantity:", error);
         if (typeof showToast === "function") {
           showToast(error.message || "Could not update quantity.");
@@ -448,7 +472,14 @@
           );
         }
       } catch (error) {
-        console.error("Failed to remove from cart:", error);
+        // 404 = item already gone server-side; still drop the row below.
+        if (error.status !== 404) {
+          console.error("Failed to remove from cart:", error);
+          if (typeof showToast === "function") {
+            showToast(error.message || "Could not remove item.");
+          }
+          return;
+        }
       }
 
       if (typeof showToast === "function") {
@@ -476,11 +507,16 @@
         );
       }
     } catch (error) {
-      console.error("Failed to remove item:", error);
-      if (typeof showToast === "function") {
-        showToast(error.message || "Could not remove item.");
+      // 404 means the item is already gone from the server cart (e.g. removed
+      // in another tab or on another device) — treat it as removed and let the
+      // row drop below instead of showing a misleading "not found" error.
+      if (error.status !== 404) {
+        console.error("Failed to remove item:", error);
+        if (typeof showToast === "function") {
+          showToast(error.message || "Could not remove item.");
+        }
+        return;
       }
-      return;
     }
 
     // The in-memory `items` array is the render source of truth — drop the

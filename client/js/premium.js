@@ -1199,7 +1199,16 @@
             qtyEl.value = next;
             renderMiniCart();
             refreshBadge();
-          }).catch(function (err) { showToast((err && err.message) || 'Update failed', true); });
+          }).catch(function (err) {
+            // 404 = item already gone server-side; refresh the list instead
+            // of showing a misleading "not found" error.
+            if (err && err.status === 404) {
+              renderMiniCart();
+              refreshBadge();
+              return;
+            }
+            showToast((err && err.message) || 'Update failed', true);
+          });
         } else {
           var guest = ghGuestCart();
           guest.forEach(function (g) { if (g.productId === key.replace(/^g-/, '')) g.quantity = next; });
@@ -1224,7 +1233,16 @@
           showToast('Item removed from cart');
           renderMiniCart();
           refreshBadge();
-        }).catch(function (err) { showToast((err && err.message) || 'Remove failed', true); });
+        }).catch(function (err) {
+          // 404 = item already gone server-side; refresh the list instead
+          // of showing a misleading "not found" error.
+          if (err && err.status === 404) {
+            renderMiniCart();
+            refreshBadge();
+            return;
+          }
+          showToast((err && err.message) || 'Remove failed', true);
+        });
         return;
       }
       var checkout = e.target.closest('[data-gh-checkout]');

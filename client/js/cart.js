@@ -141,9 +141,12 @@ async function ghApiRequest(path, options) {
   }
 
   if (!res.ok) {
-    throw new Error(
+    const err = new Error(
       (data && data.message) || "Request failed (" + res.status + ")"
     );
+    err.status = res.status;
+    err.data = data;
+    throw err;
   }
   return data;
 }
