@@ -4,13 +4,57 @@ const { body } = require("express-validator");
 
 const protect = require("../middleware/authMiddleware");
 const validate = require("../middleware/validate");
+const { createRateLimiter } = require("../utils/rateLimit");
 
 const {
   registerUser,
   loginUser,
   getProfile,
   updateProfile,
+  requestPasswordReset,
+  verifyResetCode,
+  resetPassword,
 } = require("../controllers/authController");
+
+// Forgot-password abuse protection (in-memory, per instance).
+const forgotPasswordLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // per email+IP in the window (emails are throttled to 1/min anyway)
+  keyFn: (req) =>
+    String((req.body && req.body.email) || "").trim().toLowerCase() +
+    "|" +
+    (req.ip || "unknown"),
+  message: "Too many requests. Please try again in a few minutes.",
+});
+
+const forgotPasswordIpLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  keyFn: (req) => "ip:" + (req.headers["x-forwarded-for"]
+    ? String(req.headers["x-forwarded-for"]).split(",")[0].trim()
+    : req.ip || "unknown"),
+  message: "Too many requests. Please try again in a few minutes.",
+});
+
+const verifyResetLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  keyFn: (req) =>
+    String((req.body && req.body.email) || "").trim().toLowerCase() +
+    "|" +
+    (req.ip || "unknown"),
+  message: "Too many attempts. Please request a new code and try again later.",
+});
+
+const resetPasswordLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  keyFn: (req) =>
+    String((req.body && req.body.email) || "").trim().toLowerCase() +
+    "|" +
+    (req.ip || "unknown"),
+  message: "Too many attempts. Please try again later.",
+});
 
 const NAME_RULE = body("name")
   .optional()
@@ -62,5 +106,39 @@ router.get("/me", protect, getProfile);
 
 // Update Current User Profile (protected)
 router.put("/me", protect, NAME_RULE, EMAIL_RULE, PHONE_RULE, validate, updateProfile);
+
+// Forgot Password
+router.post(
+  "/forgot-password",
+  forgotPasswordIpLimiter,
+  forgotPasswordLimiter,
+  EMAIL_RULE,
+  validate,
+  requestPasswordReset
+);
+
+// Verify Reset Code
+router.post(
+  "/verify-reset-code",
+  verifyResetLimiter,
+  EMAIL_RULE,
+  body("code")
+    .trim()
+    .matches(/^[0-9]{6}$/)
+    .withMessage("Verification code must be 6 digits"),
+  validate,
+  verifyResetCode
+);
+
+// Reset Password
+router.post(
+  "/reset-password",
+  resetPasswordLimiter,
+  EMAIL_RULE,
+  body("code").optional().trim(),
+  PASSWORD_RULE,
+  validate,
+  resetPassword
+);
 
 module.exports = router;

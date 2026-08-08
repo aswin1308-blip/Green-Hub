@@ -8,6 +8,7 @@ const {
   getCart,
   updateCart,
   removeCart,
+  clearCart,
 } = require("../controllers/cartController");
 
 router.post("/add", protect, addToCart);
@@ -15,6 +16,9 @@ router.post("/add", protect, addToCart);
 router.get("/", protect, getCart);
 
 router.put("/:id", protect, updateCart);
+
+// Must be registered BEFORE "/:id" or Express would treat "clear" as an id.
+router.delete("/clear", protect, clearCart);
 
 router.delete("/:id", protect, removeCart);
 

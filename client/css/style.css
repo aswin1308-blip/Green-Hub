@@ -1189,6 +1189,158 @@ font-weight:600;
 }
 
 /* =======================================
+      FORGOT PASSWORD
+======================================= */
+
+.fp-hint{
+
+font-size:13.5px;
+
+color:#666;
+
+text-align:left;
+
+margin-top:8px;
+
+margin-bottom:0;
+
+}
+
+.fp-hint strong{
+
+color:#2e7d32;
+
+}
+
+.fp-resend{
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+gap:6px;
+
+flex-wrap:wrap;
+
+margin-top:18px;
+
+margin-bottom:0;
+
+font-size:14px;
+
+}
+
+.fp-resend button{
+
+width:auto;
+
+margin-top:0;
+
+background:none;
+
+border:none;
+
+color:#2e7d32;
+
+font-weight:600;
+
+cursor:pointer;
+
+text-decoration:underline;
+
+padding:0;
+
+}
+
+.fp-resend button:disabled{
+
+color:#999;
+
+cursor:not-allowed;
+
+text-decoration:none;
+
+}
+
+.fp-resend span{
+
+color:#999;
+
+font-size:13px;
+
+}
+
+.fp-success-icon{
+
+text-align:center;
+
+font-size:56px;
+
+color:#2e7d32;
+
+margin-bottom:10px;
+
+}
+
+.fp-success-title{
+
+font-size:20px;
+
+font-weight:700;
+
+color:#2e7d32;
+
+text-align:center;
+
+margin-bottom:6px;
+
+}
+
+.fp-success-sub{
+
+text-align:center;
+
+color:#666;
+
+margin-bottom:20px;
+
+}
+
+.fp-login-btn{
+
+display:block;
+
+width:100%;
+
+text-align:center;
+
+background:#2e7d32;
+
+color:#fff;
+
+font-weight:700;
+
+padding:14px;
+
+border-radius:10px;
+
+text-decoration:none;
+
+transition:background .3s;
+
+}
+
+.fp-login-btn:hover{
+
+background:#1b5e20;
+
+color:#fff;
+
+}
+
+/* =======================================
       BENEFITS
 ======================================= */
 
@@ -1391,6 +1543,36 @@ padding:30px;
 border-radius:15px;
 
 box-shadow:0 8px 20px rgba(0,0,0,.08);
+
+}
+
+.gh-cart-clear-btn{
+
+background:none;
+
+border:1px solid #c62828;
+
+color:#c62828;
+
+font-weight:600;
+
+padding:8px 16px;
+
+border-radius:8px;
+
+cursor:pointer;
+
+font-size:13px;
+
+transition:all .25s;
+
+}
+
+.gh-cart-clear-btn:hover{
+
+background:#c62828;
+
+color:#fff;
 
 }
 

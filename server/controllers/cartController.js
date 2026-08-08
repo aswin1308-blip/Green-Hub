@@ -35,7 +35,18 @@ const addToCart = async (req, res) => {
       });
     }
 
-    const qty = Math.min(MAX_QTY, Math.max(1, parseInt(quantity, 10) || 1));
+    const pQty = Math.min(MAX_QTY, Math.max(1, parseInt(quantity, 10) || 1));
+
+    // Never allow adding more than the available stock.
+    const available = Math.max(0, Number(product.stock) || 0);
+    if (available <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "This product is currently out of stock.",
+      });
+    }
+
+    const qty = Math.min(pQty, available);
 
     const existing = await Cart.findOne({
       user: req.user._id,
@@ -43,7 +54,7 @@ const addToCart = async (req, res) => {
     });
 
     if (existing) {
-      existing.quantity = Math.min(MAX_QTY, existing.quantity + qty);
+      existing.quantity = Math.min(MAX_QTY, Math.min(existing.quantity + qty, available));
       await existing.save();
     } else {
       await Cart.create({
@@ -205,9 +216,29 @@ const removeCart = async (req, res) => {
   }
 };
 
+// Clear Cart (protected) — removes every item for the current user.
+const clearCart = async (req, res) => {
+  try {
+    await Cart.deleteMany({ user: req.user._id });
+
+    res.status(200).json({
+      success: true,
+      message: "Cart cleared",
+      cart: [],
+    });
+  } catch (error) {
+    console.error("[clearCart] error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong. Please try again.",
+    });
+  }
+};
+
 module.exports = {
   addToCart,
   getCart,
   updateCart,
   removeCart,
+  clearCart,
 };

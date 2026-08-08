@@ -63,7 +63,7 @@
 
                     </label>
 
-                    <a href="#">Forgot Password?</a>
+                    <a href="#" id="forgot-password-link">Forgot Password?</a>
 
                 </div>
 
@@ -141,11 +141,93 @@
 
     <div data-gh-footer-root></div>
 
+    <!-- Forgot Password Modal -->
+
+    <div class="gh-modal" id="forgot-modal" role="dialog" aria-modal="true"
+        aria-labelledby="forgot-modal-title">
+        <div class="gh-modal-card" style="max-width:460px;padding:38px 34px">
+
+            <button type="button" class="gh-modal-close" data-forgot-close aria-label="Close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 id="forgot-modal-title" style="margin:0 0 6px;font-size:22px">Forgot Password?</h2>
+            <p style="color:var(--gh-grey);margin:0 0 22px;font-size:14px">
+                Enter your registered email and we will send you a 6-digit
+                verification code.
+            </p>
+
+            <!-- Step 1: request code -->
+            <div data-forgot-step="email">
+                <label for="forgot-email">Email Address</label>
+                <input type="email" id="forgot-email" name="email"
+                    placeholder="Enter your email" autocomplete="email" required>
+                <p id="forgot-error" class="auth-error" style="color:var(--gh-danger);font-size:13px;margin:10px 0 0" hidden></p>
+                <button type="button" class="gh-forgot-btn" data-forgot-send
+                    style="width:100%;margin-top:18px;padding:13px;border-radius:12px;border:none;background:#2e7d32;color:#fff;font-size:15px;font-weight:600;cursor:pointer">
+                    Send Code
+                </button>
+            </div>
+
+            <!-- Step 2: verify code -->
+            <div id="forgot-step-code" hidden>
+                <label for="forgot-code">Verification Code</label>
+                <input type="text" id="forgot-code" name="code" maxlength="6"
+                    inputmode="numeric" pattern="[0-9]*" placeholder="6-digit code"
+                    autocomplete="one-time-code" required>
+                <p style="color:var(--gh-grey);font-size:12px;margin:8px 0 0">
+                    Code sent to <b><span id="forgot-code-email"></span></b>. Valid for 10 minutes.
+                </p>
+                <p id="forgot-error-step2" class="auth-error" style="color:var(--gh-danger);font-size:13px;margin:10px 0 0" hidden></p>
+                <button type="verify" class="login-forgot-btn" data-forgot-verify
+                    style="width:100%;margin-top:18px;padding:13px;border-radius:12px;border:none;background:#2e7d32;color:#fff;font-size:15px;font-weight:600;cursor:pointer">
+                    Verify Code
+                </button>
+                <button type="button" class="login-forgot-btn" data-forgot-resend
+                    style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1px solid #2e7d32;background:transparent;color:#2e7d32;font-size:14px;font-weight:600;cursor:pointer">
+                    Resend Code <span id="forgot-resend-timer"></span>
+                </button>
+            </div>
+
+            <!-- Step 3: set new password -->
+            <div id="forgot-step-password" hidden>
+                <label for="forgot-password">New Password</label>
+                <input type="password" id="forgot-password" name="password"
+                    placeholder="At least 6 characters" autocomplete="new-password" required>
+                <label for="forgot-confirm" style="margin-top:14px">Confirm New Password</label>
+                <input type="password" id="forgot-confirm" name="confirm"
+                    placeholder="Re-enter new password" autocomplete="new-password" required>
+                <p id="forgot-error-step3" class="auth-error" style="color:var(--gh-danger);font-size:13px;margin:10px 0 0" hidden></p>
+                <button type="reset" data-forgot-submit
+                    style="width:100%;margin-top:18px;padding:13px;border-radius:12px;border:none;background:#2e7d32;color:#fff;font-size:15px;font-weight:600;cursor:pointer">
+                    Reset Password
+                </button>
+            </div>
+
+            <!-- Success -->
+            <div id="forgot-success" hidden
+                style="text-align:center;padding:10px 0 2px">
+                <i class="fa-solid fa-circle-check"
+                    style="font-size:44px;color:#2e7d32;margin-bottom:14px"></i>
+                <h3 style="margin:0 0 8px;font-size:20px">Password Updated!</h3>
+                <p style="color:var(--gh-grey);font-size:14px;margin:0 0 20px">
+                    You can now log in with your new password.
+                </p>
+                <button type="button" data-forgot-login
+                    style="width:100%;padding:13px;border-radius:12px;border:none;background:#2e7d32;color:#fff;font-size:15px;font-weight:600;cursor:pointer">
+                    Go to Login
+                </button>
+            </div>
+
+        </div>
+    </div>
+
 
 <script src="../js/cart.js?v=3"></script>
     <script src="../js/header.js?v=4"></script>
     <script src="../js/premium.js?v=4"></script>
 <script src="../js/script.js?v=4"></script>
+    <script src="../js/forgot-password.js?v=1"></script>
 </body>
 
 </html>

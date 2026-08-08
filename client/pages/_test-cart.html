@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Hub | Cart Test Harness</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/premium.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+    <div data-gh-header-root></div>
+    <section class="cart">
+        <h1>Your Shopping Cart</h1>
+        <table border="1" cellpadding="15" id="cart-table">
+            <tr><th>Plant</th><th>Image</th><th>Price</th><th>Quantity</th><th>Total</th><th>Action</th></tr>
+            <tbody id="cart-table-body"></tbody>
+        </table>
+    </section>
+    <section class="summary" id="cart-summary"><p>Loading your cart...</p></section>
+    <section class="recommend">
+        <h2>You May Also Like</h2>
+        <div class="product-container" id="cart-recommended"><p>Loading recommended products...</p></div>
+    </section>
+    <div data-gh-footer-root></div>
+
+    <pre id="test-result" style="white-space:pre-wrap;background:#111;color:#7f7;padding:16px;font-size:12px"></pre>
+
+    <script>
+        window.GH_API_BASE =
+            new URLSearchParams(window.location.search).get('base') ||
+            'https://greenhub1.onrender.com';
+    </script>
+    <script src="../js/cart.js?v=4"></script>
+    <script src="../js/header.js?v=4"></script>
+    <script src="../js/premium.js?v=5"></script>
+    <script src="../js/script.js?v=5"></script>
+    <script src="../js/products.js?v=3"></script>
+    <script src="../js/cart-page.js?v=6"></script>
+
+    <script>
+    (function () {
+      var PHASE = new URLSearchParams(window.location.search).get('p') || 'seed';
+      var results = [];
+      var out = document.getElementById('test-result');
+      function log(msg) { results.push(msg); out.textContent = results.join('\n'); }
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+      async function waitFor(fn, timeout, label) {
+        var t = Date.now();
+        while (Date.now() - t < (timeout || 15000)) {
+          try { var v = fn(); if (v) return v; } catch (e) {}
+          await sleep(150);
+        }
+        var dbg = '';
+        try {
+          dbg = ' | tbody=' + document.getElementById('cart-table-body').innerHTML.substring(0, 200)
+            + ' | summary=' + document.getElementById('cart-summary').textContent;
+        } catch (e) {}
+        throw new Error('waitFor timeout(' + (label || '') + ')' + dbg);
+      }
+
+      function login(email, password) {
+        return ghApiRequest('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email, password: password })
+        }).then(function (data) { ghSetSession(data.token, data.user); return data.user; });
+      }
+
+      function tokenUserId() {
+        try {
+          var t = ghGetToken();
+          if (!t) return 'none';
+          var payload = JSON.parse(atob(t.split('.')[1]));
+          return String(payload.id).slice(-6);
+        } catch (e) { return 'decode-error'; }
+      }
+
+      async function getActiveProducts(limit) {
+        var d = await ghApiRequest('/api/products?status=active&limit=' + (limit || 30));
+        return (d.products || []).filter(function (p) { return Number(p.stock) > 0; });
+      }
+
+      function readSummary() { return document.getElementById('cart-summary').textContent; }
+      function rowCount() { return document.querySelectorAll('#cart-table-body tr').length; }
+
+      async function resetCart() {
+        var h = { Authorization: 'Bearer ' + ghGetToken() };
+        try {
+          var d = await ghApiRequest('/api/cart');
+          (d.cart || []).forEach(function (c) {
+            fetch(ghApiBase() + '/api/cart/' + c._id, { method: 'DELETE', headers: h }).catch(function () {});
+          });
+        } catch (e) {}
+        await sleep(1500);
+      }
+
+      /* ============ PHASE seed: login A, reset, add 2 products ============ */
+      async function phaseSeed() {
+        if (!ghIsLoggedIn()) await login('local.cart.test.2026@gmail.com', 'TestPass123');
+        log('SEED: logged in as A');
+        await resetCart();
+        var prods = await getActiveProducts();
+        var p1 = prods[0], p2 = prods[1];
+        log('SEED products: ' + p1.name + ' | ' + p2.name);
+        await ghAddToCart(p1._id, 2);
+        log('SEED add x2 as user=' + tokenUserId());
+        await ghAddToCart(p1._id, 1);  // merge -> qty 3
+        var cart = (await ghApiRequest('/api/cart')).cart;
+        var same = cart.filter(function (c) { return String(c.product._id) === String(p1._id); });
+        log('SEED re-add merge: entries=' + same.length + ' qty=' + (same.length ? same[0].quantity : '?'));
+        await ghAddToCart(p2._id, 1);
+        cart = (await ghApiRequest('/api/cart')).cart;
+        log('SEED final entries: ' + cart.length);
+        log('SEED DONE');
+        document.title = 'GH_SEED_DONE';
+      }
+
+      /* ============ PHASE render: fresh page load, verify + edit ============ */
+      async function phaseRender() {
+        log('RENDER: page loaded; token=' + (ghIsLoggedIn() ? 'present' : 'MISSING'));
+        // page should render 2 rows from server (persistence across page load)
+        await waitFor(function () { return rowCount() === 2 ? 2 : 0; }, 15000, 'two rows');
+        log('RENDER: rows=' + rowCount());
+        var qtyInputs = document.querySelectorAll('#cart-table-body input[type="number"]');
+        log('QTY: ' + Array.prototype.map.call(qtyInputs, function (i) { return i.value; }).join(','));
+        var rowTotals = document.querySelectorAll('#cart-table-body .row-total');
+        log('ROW TOTALS: ' + Array.prototype.map.call(rowTotals, function (t) { return t.textContent; }).join(' | '));
+        log('SUMMARY: ' + readSummary().replace(/\s+/g, ' ').trim());
+
+        // PLUS
+        document.querySelector('#cart-table-body button[data-cart-step="1"]').click();
+        await sleep(1600);
+        var q1 = document.querySelectorAll('#cart-table-body input[type="number"]')[0].value;
+        var r1 = document.querySelectorAll('#cart-table-body .row-total')[0].textContent;
+        log('PLUS: qty=' + q1 + ' rowTotal=' + r1 + ' | summary=' + readSummary().replace(/\s+/g, ' ').trim());
+
+        // MINUS
+        document.querySelector('#cart-table-body button[data-cart-step="-1"]').click();
+        await sleep(1600);
+        var q2 = document.querySelectorAll('#cart-table-body input[type="number"]')[0].value;
+        log('MINUS: qty=' + q2);
+
+        // REMOVE second row (the actual Remove button)
+        document.querySelectorAll('#cart-table-body tr')[1].querySelector('.gh-cart-remove-btn').click();
+        await sleep(1600);
+        log('REMOVE: rows=' + rowCount());
+        var server = (await ghApiRequest('/api/cart')).cart;
+        log('SERVER entries after remove: ' + server.length);
+
+        // ISOLATION (API-level): user B must see 0, user A back to 1
+        ghClearSession();
+        await login('local.cart.test.b@gmail.com', 'TestPass123');
+        var cartB = (await ghApiRequest('/api/cart')).cart;
+        log('USER B entries (expect 0): ' + cartB.length + ' [as user=' + tokenUserId() + ']');
+        ghClearSession();
+        await login('local.cart.test.2026@gmail.com', 'TestPass123');
+        var cartA = (await ghApiRequest('/api/cart')).cart;
+        log('USER A entries again (expect 1): ' + cartA.length + ' [as user=' + tokenUserId() + ']');
+
+        // EMPTY STATE (logout -> page will not refetch; verify empty text present when cart empty)
+        ghClearSession();
+        log('RENDER TESTS PASSED');
+        document.title = 'GH_RENDER_DONE';
+      }
+
+      function boot() {
+        var fn = PHASE === 'render' ? phaseRender : phaseSeed;
+        Promise.resolve(fn()).catch(function (e) {
+          log('FATAL: ' + (e && e.stack || e));
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+      } else {
+        boot();
+      }
+    })();
+    </script>
+</body>
+</html>

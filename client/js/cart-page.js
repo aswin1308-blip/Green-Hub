@@ -251,7 +251,32 @@
       const td = document.createElement("td");
       td.colSpan = 6;
       td.style.textAlign = "center";
-      td.textContent = "Your cart is empty.";      tr.appendChild(td);
+      td.style.padding = "48px 20px";
+
+      const icon = document.createElement("div");
+      icon.style.fontSize = "44px";
+      icon.style.color = "#2e7d32";
+      icon.style.marginBottom = "14px";
+      icon.innerHTML = '<i class="fa-solid fa-basket-shopping"></i>';
+
+      const title = document.createElement("div");
+      title.style.fontSize = "20px";
+      title.style.fontWeight = "700";
+      title.style.color = "#2e7d32";
+      title.textContent = "Your cart is empty";
+
+      const sub = document.createElement("div");
+      sub.style.color = "#777";
+      sub.style.margin = "10px 0 22px";
+      sub.textContent = "Add some greenery to your cart and let the magic grow.";
+
+      const cta = document.createElement("a");
+      cta.href = "products.html";
+      cta.className = "gh-btn gh-btn--big";
+      cta.textContent = "Continue Shopping";
+
+      td.append(icon, title, sub, cta);
+      tr.appendChild(td);
       tbody.appendChild(tr);
     } else {
       items.forEach((item) => {
@@ -271,11 +296,39 @@
       0
     );
 
+    summary.innerHTML = "";
+
+    if (items.length === 0) {
+      // Empty cart — hide all pricing lines / checkout button.
+      const guide = document.createElement("p");
+      guide.style.textAlign = "center";
+      guide.style.color = "#666";
+      guide.textContent =
+        "Your cart is empty. Browse our plants, seeds and gardening essentials.";
+      const shop = document.createElement("a");
+      shop.href = "products.html";
+      shop.className = "gh-btn gh-btn--big";
+      shop.textContent = "Continue Shopping";
+      summary.append(guide, shop);
+      return;
+    }
+
+    const clearWrap = document.createElement("div");
+    clearWrap.style.display = "flex";
+    clearWrap.style.justifyContent = "flex-end";
+    clearWrap.style.marginBottom = "14px";
+    const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
+    clearBtn.className = "gh-cart-clear-btn";
+    clearBtn.id = "cart-clear-all";
+    clearBtn.textContent = "Clear Cart";
+    clearBtn.setAttribute("aria-label", "Remove all items from your cart");
+    clearWrap.appendChild(clearBtn);
+    summary.appendChild(clearWrap);
+
     const delivery = subtotal >= FREE_DELIVERY_MIN ? 0 : DELIVERY_FEE;
     const tax = Math.round(subtotal * GST_RATE);
     const total = subtotal + delivery + tax;
-
-    summary.innerHTML = "";
 
     const p1 = document.createElement("p");
     p1.innerHTML = "Items : <strong>" + itemCount + "</strong>";
@@ -314,6 +367,26 @@
     link.appendChild(checkoutBtn);
 
     summary.append(p1, p2, p3, p4, rule, h3, link);
+
+    clearBtn.addEventListener("click", async function () {
+      if (!window.confirm("Are you sure you want to clear your cart?")) return;
+      try {
+        if (mode === "server") {
+          await ghApiRequest("/api/cart/clear", { method: "DELETE" });
+        } else {
+          ghSaveGuestCart([]);
+        }
+        items = [];
+        render();
+        ghRefreshCartBadge();
+        if (typeof showToast === "function") showToast("Cart cleared");
+      } catch (error) {
+        console.error("Failed to clear cart:", error);
+        if (typeof showToast === "function") {
+          showToast(error.message || "Could not clear the cart.", true);
+        }
+      }
+    });
   }
 
   tbody.addEventListener("change", async function (event) {
